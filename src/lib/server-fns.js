@@ -444,3 +444,330 @@ export const listOpportunities = createServerFn({ method: "GET" })
       scored,
     };
   });
+
+const signFile = async (db, fileUri) => {
+  if (!fileUri) return null;
+  try {
+    const { signed_url: signedUrl } = await db.integrations.Core.CreateFileSignedUrl({
+      file_uri: fileUri,
+      expires_in: 3600,
+    });
+    return signedUrl ?? null;
+  } catch {
+    return null;
+  }
+};
+
+const campaignFields = {
+  name: z.string().min(1).max(160),
+  description: z.string().max(4000).nullable().optional(),
+  product_id: z.string().max(64).nullable().optional(),
+  objective: z.enum(["sales", "awareness", "engagement", "leads"]),
+  platforms: z.array(z.enum(["instagram", "facebook", "tiktok", "pinterest"])).max(4),
+  start_date: z.string().max(40).nullable().optional(),
+  end_date: z.string().max(40).nullable().optional(),
+  status: z.enum(["draft", "active", "paused", "finished", "cancelled"]),
+};
+
+export const listCampaigns = createServerFn({ method: "GET" })
+  .middleware([requireUser])
+  .validator(
+    z.object({
+      search: z.string().max(120).optional(),
+      status: z.enum(["draft", "active", "paused", "finished", "cancelled"]).optional(),
+      cursor: z.string().max(500).optional(),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const query = {};
+    if (data.search) query.name = { $regex: data.search, $options: "i" };
+    if (data.status) query.status = data.status;
+
+    const [page, products, aggregate] = await Promise.all([
+      db.entities.Campaign.filter(query, {
+        sort: "-created_date",
+        limit: 20,
+        ...(data.cursor ? { cursor: data.cursor } : {}),
+      }),
+      db.entities.Product.list({ sort: "name", limit: 200 }),
+      db.entities.Post.aggregate({ groupBy: "campaign_id" }),
+    ]);
+
+    const postCounts = {};
+    (aggregate?.rows ?? []).forEach((row) => {
+      if (row.campaign_id) postCounts[row.campaign_id] = row.count;
+    });
+
+    return {
+      items: page?.items ?? [],
+      has_more: Boolean(page?.has_more),
+      next_cursor: page?.next_cursor ?? null,
+      products: products?.items ?? [],
+      postCounts,
+    };
+  });
+
+export const createCampaign = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object(campaignFields))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const created = await db.entities.Campaign.create(data);
+    await logActivity(
+      db,
+      "campaign.created",
+      `Campanha criada: ${created?.name ?? data.name}`,
+      "Campaign",
+      created?.id,
+    );
+    return created;
+  });
+
+export const updateCampaign = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object(campaignFields).partial().extend({ id: z.string().min(1) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const { id, ...patch } = data;
+    const updated = await db.entities.Campaign.update(id, patch);
+    await logActivity(
+      db,
+      "campaign.updated",
+      `Campanha atualizada: ${updated?.name ?? patch.name ?? "campanha"}`,
+      "Campaign",
+      id,
+    );
+    return updated;
+  });
+
+export const deleteCampaign = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ id: z.string().min(1) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const linked = await db.entities.Post.count({ campaign_id: data.id });
+    if (linked > 0) {
+      throw new Error(
+        `Esta campanha possui ${linked} publicação(ões) vinculada(s). Remova ou desvincule antes de excluir.`,
+      );
+    }
+    const campaign = await db.entities.Campaign.get(data.id).catch(() => null);
+    await db.entities.Campaign.delete(data.id);
+    await logActivity(
+      db,
+      "campaign.deleted",
+      `Campanha removida: ${campaign?.name ?? data.id}`,
+      "Campaign",
+      data.id,
+    );
+    return { ok: true };
+  });
+
+const postFields = {
+  title: z.string().min(1).max(160),
+  platform: z.enum(["instagram", "facebook", "tiktok", "pinterest"]),
+  format: z.enum(["single_image", "carousel"]),
+  campaign_id: z.string().max(64).nullable().optional(),
+  product_id: z.string().max(64).nullable().optional(),
+  affiliate_link_id: z.string().max(64).nullable().optional(),
+  caption: z.string().max(2400).nullable().optional(),
+  description: z.string().max(4000).nullable().optional(),
+  cta: z.string().max(240).nullable().optional(),
+  hashtags: z.array(z.string().max(60)).max(30).optional(),
+  affiliate_disclosure: z.string().max(300).nullable().optional(),
+};
+
+export const listPosts = createServerFn({ method: "GET" })
+  .middleware([requireUser])
+  .validator(
+    z.object({
+      status: z
+        .enum([
+          "draft",
+          "pending_approval",
+          "changes_requested",
+          "rejected",
+          "approved",
+          "scheduled",
+          "publishing",
+          "published",
+          "failed",
+          "cancelled",
+        ])
+        .optional(),
+      platform: z.enum(["instagram", "facebook", "tiktok", "pinterest"]).optional(),
+      campaign_id: z.string().max(64).optional(),
+      cursor: z.string().max(500).optional(),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const query = {};
+    if (data.status) query.status = data.status;
+    if (data.platform) query.platform = data.platform;
+    if (data.campaign_id) query.campaign_id = data.campaign_id;
+
+    const [page, campaigns, products] = await Promise.all([
+      db.entities.Post.filter(query, {
+        sort: "-updated_date",
+        limit: 18,
+        ...(data.cursor ? { cursor: data.cursor } : {}),
+      }),
+      db.entities.Campaign.list({ sort: "-created_date", limit: 100 }),
+      db.entities.Product.list({ sort: "name", limit: 200 }),
+    ]);
+
+    const posts = page?.items ?? [];
+    const ids = posts.map((post) => post.id);
+    const assets = ids.length
+      ? (await db.entities.PostAsset.filter({ post_id: { $in: ids } }, { sort: "position", limit: 200 }))
+          ?.items ?? []
+      : [];
+
+    const firstAsset = {};
+    const assetCount = {};
+    assets.forEach((asset) => {
+      assetCount[asset.post_id] = (assetCount[asset.post_id] ?? 0) + 1;
+      if (!firstAsset[asset.post_id]) firstAsset[asset.post_id] = asset;
+    });
+
+    const thumbnails = await Promise.all(
+      posts.map((post) => signFile(db, firstAsset[post.id]?.file_uri)),
+    );
+
+    return {
+      items: posts.map((post, index) => ({
+        ...post,
+        thumbnail_url: thumbnails[index],
+        asset_count: assetCount[post.id] ?? 0,
+      })),
+      has_more: Boolean(page?.has_more),
+      next_cursor: page?.next_cursor ?? null,
+      campaigns: campaigns?.items ?? [],
+      products: products?.items ?? [],
+    };
+  });
+
+export const getPostEditor = createServerFn({ method: "GET" })
+  .middleware([requireUser])
+  .validator(z.object({ id: z.string().min(1) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const post = await db.entities.Post.get(data.id).catch(() => null);
+    if (!post) return null;
+
+    const [assetPage, campaigns, products, links] = await Promise.all([
+      db.entities.PostAsset.filter({ post_id: post.id }, { sort: "position", limit: 50 }),
+      db.entities.Campaign.list({ sort: "-created_date", limit: 100 }),
+      db.entities.Product.list({ sort: "name", limit: 200 }),
+      db.entities.AffiliateLink.list({ sort: "-created_date", limit: 300 }),
+    ]);
+
+    const assets = await Promise.all(
+      (assetPage?.items ?? []).map(async (asset) => ({
+        ...asset,
+        signed_url: await signFile(db, asset.file_uri),
+      })),
+    );
+
+    return {
+      post,
+      assets,
+      campaigns: campaigns?.items ?? [],
+      products: products?.items ?? [],
+      links: links?.items ?? [],
+    };
+  });
+
+export const createPost = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object(postFields))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const created = await db.entities.Post.create({ ...data, status: "draft", version: 1 });
+    await logActivity(
+      db,
+      "post.created",
+      `Publicação criada: ${created?.title ?? data.title}`,
+      "Post",
+      created?.id,
+    );
+    return created;
+  });
+
+export const updatePost = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object(postFields).partial().extend({ id: z.string().min(1) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const { id, ...patch } = data;
+    const existing = await db.entities.Post.get(id).catch(() => null);
+    const updated = await db.entities.Post.update(id, {
+      ...patch,
+      version: (existing?.version ?? 1) + 1,
+    });
+    await logActivity(
+      db,
+      "post.updated",
+      `Publicação atualizada: ${updated?.title ?? patch.title ?? "publicação"}`,
+      "Post",
+      id,
+    );
+    return updated;
+  });
+
+export const deletePost = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ id: z.string().min(1) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const post = await db.entities.Post.get(data.id).catch(() => null);
+    await db.entities.PostAsset.deleteMany({ post_id: data.id });
+    await db.entities.Post.delete(data.id);
+    await logActivity(
+      db,
+      "post.deleted",
+      `Publicação removida: ${post?.title ?? data.id}`,
+      "Post",
+      data.id,
+    );
+    return { ok: true };
+  });
+
+export const addPostAsset = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(
+    z.object({
+      post_id: z.string().min(1),
+      file_uri: z.string().min(1).max(1000),
+      caption: z.string().max(500).nullable().optional(),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const position = await db.entities.PostAsset.count({ post_id: data.post_id });
+    return db.entities.PostAsset.create({
+      post_id: data.post_id,
+      file_uri: data.file_uri,
+      caption: data.caption ?? null,
+      position,
+      media_type: "image",
+    });
+  });
+
+export const updatePostAsset = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ id: z.string().min(1), caption: z.string().max(500).nullable().optional() }))
+  .handler(({ data, context }) => {
+    const { id, ...patch } = data;
+    return context.getBase44().entities.PostAsset.update(id, patch);
+  });
+
+export const deletePostAsset = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ id: z.string().min(1) }))
+  .handler(async ({ data, context }) => {
+    await context.getBase44().entities.PostAsset.delete(data.id);
+    return { ok: true };
+  });
