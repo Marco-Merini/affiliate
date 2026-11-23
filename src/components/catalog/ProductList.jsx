@@ -40,6 +40,7 @@ export default function ProductList({
   onChangeStatus,
   onDelete,
   onAnalyze,
+  onLinks,
 }) {
   if (isLoading) {
     return (
@@ -67,6 +68,7 @@ export default function ProductList({
           onChangeStatus={onChangeStatus}
           onDelete={onDelete}
           onAnalyze={onAnalyze}
+          onLinks={onLinks}
         />
       ))}
 

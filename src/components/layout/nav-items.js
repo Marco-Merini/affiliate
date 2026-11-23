@@ -42,7 +42,7 @@ export const NAV_GROUPS = [
     label: "Sistema",
     items: [
       { label: "Integrações", icon: Plug, phase: 5 },
-      { label: "Analytics", icon: BarChart3, phase: 6 },
+      { label: "Analytics", to: "/analytics", icon: BarChart3 },
       { label: "Configurações", to: "/configuracoes", icon: Settings },
     ],
   },

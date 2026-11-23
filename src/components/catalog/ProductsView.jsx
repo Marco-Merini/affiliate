@@ -9,6 +9,7 @@ import ProductList from "@/components/catalog/ProductList";
 import ProductFormDialog from "@/components/catalog/ProductFormDialog";
 import ConfirmDeleteDialog from "@/components/catalog/ConfirmDeleteDialog";
 import OpportunityDialog from "@/components/opportunity/OpportunityDialog";
+import AffiliateLinksDialog from "@/components/catalog/AffiliateLinksDialog";
 import { deleteProduct, listProducts, updateProduct } from "@/lib/server-fns";
 import { formatNumber } from "@/lib/format";
 
@@ -23,6 +24,7 @@ export default function ProductsView() {
   const [editing, setEditing] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
   const [analyzing, setAnalyzing] = useState(null);
+  const [linksFor, setLinksFor] = useState(null);
 
   const queryClient = useQueryClient();
   const list = useServerFn(listProducts);
@@ -170,6 +172,7 @@ export default function ProductsView() {
         }
         onDelete={(product) => setPendingDelete(product)}
         onAnalyze={setAnalyzing}
+        onLinks={setLinksFor}
       />
 
       <ProductFormDialog
@@ -184,6 +187,12 @@ export default function ProductsView() {
         open={Boolean(analyzing)}
         onOpenChange={(open) => !open && setAnalyzing(null)}
         product={analyzing}
+      />
+
+      <AffiliateLinksDialog
+        open={Boolean(linksFor)}
+        onOpenChange={(open) => !open && setLinksFor(null)}
+        product={linksFor}
       />
 
       <ConfirmDeleteDialog

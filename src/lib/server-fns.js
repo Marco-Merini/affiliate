@@ -1020,3 +1020,192 @@ export const unschedulePost = createServerFn({ method: "POST" })
     );
     return updated;
   });
+
+const linkFields = {
+  url: z.string().min(4).max(1500),
+  label: z.string().max(120).nullable().optional(),
+  is_primary: z.boolean().optional(),
+  is_active: z.boolean().optional(),
+};
+
+export const listProductLinks = createServerFn({ method: "GET" })
+  .middleware([requireUser])
+  .validator(z.object({ product_id: z.string().min(1) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const [page, aggregate] = await Promise.all([
+      db.entities.AffiliateLink.filter(
+        { product_id: data.product_id },
+        { sort: "-created_date", limit: 50 },
+      ),
+      db.entities.ClickEvent.aggregate({
+        query: { product_id: data.product_id },
+        groupBy: "affiliate_link_id",
+      }),
+    ]);
+
+    const clicks = {};
+    (aggregate?.rows ?? []).forEach((row) => {
+      if (row.affiliate_link_id) clicks[row.affiliate_link_id] = row.count;
+    });
+
+    return { items: page?.items ?? [], clicks };
+  });
+
+export const createAffiliateLink = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ product_id: z.string().min(1), ...linkFields }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const created = await db.entities.AffiliateLink.create({
+      product_id: data.product_id,
+      url: data.url,
+      label: data.label ?? null,
+      is_primary: data.is_primary ?? false,
+      is_active: data.is_active ?? true,
+      program_id: null,
+    });
+
+    if (created?.is_primary) {
+      await db.entities.AffiliateLink.updateMany(
+        { product_id: data.product_id, is_primary: true, id: { $ne: created.id } },
+        { $set: { is_primary: false } },
+      );
+    }
+
+    await logActivity(
+      db,
+      "link.created",
+      `Link de afiliado adicionado: ${created?.label ?? created?.url ?? "link"}`,
+      "AffiliateLink",
+      created?.id,
+    );
+    return created;
+  });
+
+export const updateAffiliateLink = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object(linkFields).partial().extend({ id: z.string().min(1) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const { id, ...patch } = data;
+    const existing = await db.entities.AffiliateLink.get(id);
+    const updated = await db.entities.AffiliateLink.update(id, patch);
+
+    if (patch.is_primary && existing?.product_id) {
+      await db.entities.AffiliateLink.updateMany(
+        { product_id: existing.product_id, is_primary: true, id: { $ne: id } },
+        { $set: { is_primary: false } },
+      );
+    }
+    return updated;
+  });
+
+export const deleteAffiliateLink = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ id: z.string().min(1) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    await db.entities.ClickEvent.deleteMany({ affiliate_link_id: data.id });
+    await db.entities.AffiliateLink.delete(data.id);
+    await logActivity(db, "link.deleted", "Link de afiliado removido", "AffiliateLink", data.id);
+    return { ok: true };
+  });
+
+export const getAnalytics = createServerFn({ method: "GET" })
+  .middleware([requireUser])
+  .validator(z.object({ days: z.number().int().min(7).max(90).optional() }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const days = data.days ?? 30;
+    const since = startOfUtcDay(new Date(Date.now() - (days - 1) * DAY_MS));
+    const weekAgo = new Date(Date.now() - 7 * DAY_MS).toISOString();
+    const metricFields = ["impressions", "reach", "likes", "comments", "shares", "saves"];
+
+    const [
+      total,
+      last7,
+      byDayRows,
+      platformRows,
+      productRows,
+      linkRows,
+      published,
+      scheduled,
+      metricsByPlatform,
+      metricTotals,
+      metricCount,
+      products,
+      links,
+    ] = await Promise.all([
+      db.entities.ClickEvent.count({}),
+      db.entities.ClickEvent.count({ created_date: { $gte: weekAgo } }),
+      db.entities.ClickEvent.aggregate({
+        query: { created_date: { $gte: since.toISOString() } },
+        dateBucket: { field: "created_date", unit: "day" },
+      }),
+      db.entities.ClickEvent.aggregate({ groupBy: "platform" }),
+      db.entities.ClickEvent.aggregate({ groupBy: "product_id" }),
+      db.entities.ClickEvent.aggregate({ groupBy: "affiliate_link_id" }),
+      db.entities.Post.count({ status: "published" }),
+      db.entities.Post.count({ status: "scheduled" }),
+      db.entities.PostMetric.aggregate({ groupBy: "platform", sum: metricFields }),
+      db.entities.PostMetric.aggregate({ sum: metricFields }),
+      db.entities.PostMetric.count({}),
+      db.entities.Product.list({ sort: "name", limit: 200 }),
+      db.entities.AffiliateLink.list({ limit: 300 }),
+    ]);
+
+    const bucketMap = new Map(
+      (byDayRows?.rows ?? []).map((row) => [String(row.created_date).slice(0, 10), row.count]),
+    );
+    const byDay = Array.from({ length: days }, (_, index) => {
+      const date = new Date(since.getTime() + index * DAY_MS).toISOString().slice(0, 10);
+      return { date, count: bucketMap.get(date) ?? 0 };
+    });
+
+    const productNames = Object.fromEntries(
+      (products?.items ?? []).map((product) => [product.id, product.name]),
+    );
+    const linkMap = Object.fromEntries((links?.items ?? []).map((link) => [link.id, link]));
+
+    return {
+      days,
+      clicks: {
+        total,
+        last7,
+        inRange: byDay.reduce((sum, row) => sum + row.count, 0),
+      },
+      byDay,
+      byPlatform: (platformRows?.rows ?? [])
+        .map((row) => ({ platform: row.platform ?? "direto", count: row.count }))
+        .sort((a, b) => b.count - a.count),
+      topProducts: (productRows?.rows ?? [])
+        .filter((row) => row.product_id)
+        .map((row) => ({
+          id: row.product_id,
+          name: productNames[row.product_id] ?? "Produto removido",
+          clicks: row.count,
+        }))
+        .sort((a, b) => b.clicks - a.clicks)
+        .slice(0, 5),
+      topLinks: (linkRows?.rows ?? [])
+        .filter((row) => row.affiliate_link_id)
+        .map((row) => {
+          const link = linkMap[row.affiliate_link_id];
+          return {
+            id: row.affiliate_link_id,
+            label: link?.label || link?.url || "Link removido",
+            product: link ? productNames[link.product_id] ?? null : null,
+            clicks: row.count,
+          };
+        })
+        .sort((a, b) => b.clicks - a.clicks)
+        .slice(0, 5),
+      posts: { published, scheduled },
+      metrics: {
+        records: metricCount,
+        totals: metricTotals?.rows?.[0] ?? {},
+        byPlatform: metricsByPlatform?.rows ?? [],
+      },
+    };
+  });

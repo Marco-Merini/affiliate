@@ -83,14 +83,14 @@ export default function Sidebar({ onNavigate }) {
       <div className="border-t border-sidebar-border p-3">
         <div className="rounded-xl bg-muted/70 p-3">
           <div className="flex items-baseline justify-between">
-            <p className="text-[11px] font-semibold text-foreground">MVP · Fase 4</p>
+            <p className="text-[11px] font-semibold text-foreground">MVP · 5 de 6 fases</p>
             <span className="text-[10px] text-muted-foreground">de 6</span>
           </div>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-border">
-            <div className="h-full rounded-full bg-brand" style={{ width: "67%" }} />
+            <div className="h-full rounded-full bg-brand" style={{ width: "83%" }} />
           </div>
           <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
-            Aprovação e calendário de publicação em operação.
+            Analytics no ar. Integrações oficiais aguardam credenciais OAuth.
           </p>
         </div>
       </div>

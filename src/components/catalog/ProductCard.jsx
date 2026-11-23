@@ -1,6 +1,7 @@
 import {
   Archive,
   ExternalLink,
+  Link2,
   MoreHorizontal,
   Package,
   PauseCircle,
@@ -38,6 +39,7 @@ export default function ProductCard({
   onChangeStatus,
   onDelete,
   onAnalyze,
+  onLinks,
 }) {
   return (
     <div className="flex gap-3.5 rounded-xl border border-border bg-card p-3.5 transition-colors hover:border-primary/25">
@@ -106,6 +108,10 @@ export default function ProductCard({
                     Arquivar
                   </DropdownMenuItem>
                 )}
+                <DropdownMenuItem onClick={() => onLinks(product)}>
+                  <Link2 className="mr-2 h-3.5 w-3.5" />
+                  Links de afiliado
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => onAnalyze(product)}>
                   <Target className="mr-2 h-3.5 w-3.5" />

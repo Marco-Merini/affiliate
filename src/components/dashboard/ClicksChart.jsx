@@ -16,14 +16,19 @@ const dayLabel = (iso) => {
   return `${day}/${month}`;
 };
 
-export default function ClicksChart({ data = [], total = 0 }) {
+export default function ClicksChart({
+  data = [],
+  total = 0,
+  title = "Cliques nos links de afiliado",
+  description = "Últimos 14 dias · rastreamento próprio",
+}) {
   const rows = data.map((row) => ({ ...row, label: dayLabel(row.date) }));
   const isEmpty = rows.length === 0 || rows.every((row) => !row.count);
 
   return (
     <Panel
-      title="Cliques nos links de afiliado"
-      description="Últimos 14 dias · rastreamento próprio"
+      title={title}
+      description={description}
       action={
         <span className="font-heading text-lg font-extrabold tabular-nums">
           {new Intl.NumberFormat("pt-BR").format(total)}
