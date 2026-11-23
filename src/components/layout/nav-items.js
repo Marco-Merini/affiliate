@@ -22,7 +22,7 @@ export const NAV_GROUPS = [
     items: [
       { label: "Produtos", to: "/produtos", icon: Package },
       { label: "Programas", to: "/programas", icon: Network },
-      { label: "Categorias", icon: Tags, phase: 2 },
+      { label: "Categorias", to: "/categorias", icon: Tags },
     ],
   },
   {

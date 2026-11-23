@@ -30,6 +30,7 @@ const EMPTY_FORM = {
   type: "physical",
   status: "active",
   program_id: "",
+  category_id: "",
   current_price: "",
   previous_price: "",
   commission_percent: "",
@@ -54,6 +55,7 @@ const fromProduct = (product) => {
     type: product.type ?? "physical",
     status: product.status ?? "active",
     program_id: product.program_id ?? "",
+    category_id: product.category_id ?? "",
     current_price: product.current_price ?? "",
     previous_price: product.previous_price ?? "",
     commission_percent: product.commission_percent ?? "",
@@ -65,7 +67,7 @@ const fromProduct = (product) => {
   };
 };
 
-export default function ProductFormDialog({ open, onOpenChange, product, programs }) {
+export default function ProductFormDialog({ open, onOpenChange, product, programs, categories }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const queryClient = useQueryClient();
   const create = useServerFn(createProduct);
@@ -98,6 +100,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, program
       type: form.type,
       status: form.status,
       program_id: form.program_id || null,
+      category_id: form.category_id || null,
       current_price: toNumber(form.current_price),
       previous_price: toNumber(form.previous_price),
       commission_percent: toNumber(form.commission_percent),
@@ -174,32 +177,57 @@ export default function ProductFormDialog({ open, onOpenChange, product, program
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label>Programa de afiliados</Label>
-            <Select
-              value={form.program_id || "none"}
-              onValueChange={(value) =>
-                setForm((current) => ({ ...current, program_id: value === "none" ? "" : value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sem programa" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Sem programa</SelectItem>
-                {programs.map((program) => (
-                  <SelectItem key={program.id} value={program.id}>
-                    {program.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {programs.length === 0 && (
-              <p className="text-[11.5px] text-muted-foreground">
-                Nenhum programa cadastrado ainda. Você pode cadastrar o produto sem programa.
-              </p>
-            )}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label>Programa de afiliados</Label>
+              <Select
+                value={form.program_id || "none"}
+                onValueChange={(value) =>
+                  setForm((current) => ({ ...current, program_id: value === "none" ? "" : value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sem programa" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sem programa</SelectItem>
+                  {programs.map((program) => (
+                    <SelectItem key={program.id} value={program.id}>
+                      {program.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Categoria</Label>
+              <Select
+                value={form.category_id || "none"}
+                onValueChange={(value) =>
+                  setForm((current) => ({ ...current, category_id: value === "none" ? "" : value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sem categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sem categoria</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+
+          {programs.length === 0 && categories.length === 0 && (
+            <p className="text-[11.5px] text-muted-foreground">
+              Nenhum programa ou categoria cadastrado ainda. O produto pode ser salvo sem vínculos.
+            </p>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-1.5">

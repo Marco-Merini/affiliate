@@ -17,6 +17,7 @@ export default function ProductsView() {
   const [status, setStatus] = useState("all");
   const [type, setType] = useState("all");
   const [programId, setProgramId] = useState("all");
+  const [categoryId, setCategoryId] = useState("all");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
@@ -32,7 +33,7 @@ export default function ProductsView() {
   }, [searchInput]);
 
   const query = useInfiniteQuery({
-    queryKey: ["products", { search, status, type, programId }],
+    queryKey: ["products", { search, status, type, programId, categoryId }],
     initialPageParam: undefined,
     queryFn: ({ pageParam }) =>
       list({
@@ -41,6 +42,7 @@ export default function ProductsView() {
           status: status === "all" ? undefined : status,
           type: type === "all" ? undefined : type,
           program_id: programId === "all" ? undefined : programId,
+          category_id: categoryId === "all" ? undefined : categoryId,
           cursor: pageParam,
         },
       }),
@@ -52,14 +54,20 @@ export default function ProductsView() {
     [query.data],
   );
   const programs = query.data?.pages[0]?.programs ?? [];
+  const categories = query.data?.pages[0]?.categories ?? [];
   const programNames = useMemo(
     () => Object.fromEntries(programs.map((program) => [program.id, program.name])),
     [programs],
+  );
+  const categoryNames = useMemo(
+    () => Object.fromEntries(categories.map((category) => [category.id, category.name])),
+    [categories],
   );
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
     queryClient.invalidateQueries({ queryKey: ["programs"] });
+    queryClient.invalidateQueries({ queryKey: ["categories"] });
     queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] });
   };
 
@@ -82,7 +90,8 @@ export default function ProductsView() {
     onError: (error) => toast.error(error?.message ?? "Não foi possível excluir o produto."),
   });
 
-  const isFiltered = Boolean(search) || status !== "all" || type !== "all" || programId !== "all";
+  const isFiltered =
+    Boolean(search) || status !== "all" || type !== "all" || programId !== "all" || categoryId !== "all";
 
   const openCreate = () => {
     setEditing(null);
@@ -100,6 +109,7 @@ export default function ProductsView() {
     setStatus("all");
     setType("all");
     setProgramId("all");
+    setCategoryId("all");
   };
 
   return (
@@ -126,7 +136,10 @@ export default function ProductsView() {
         onTypeChange={setType}
         programId={programId}
         onProgramChange={setProgramId}
+        categoryId={categoryId}
+        onCategoryChange={setCategoryId}
         programs={programs}
+        categories={categories}
         onReset={resetFilters}
         isFiltered={isFiltered}
       />
@@ -142,6 +155,7 @@ export default function ProductsView() {
       <ProductList
         products={products}
         programNames={programNames}
+        categoryNames={categoryNames}
         isFiltered={isFiltered}
         isLoading={query.isLoading}
         hasNextPage={query.hasNextPage}
@@ -160,6 +174,7 @@ export default function ProductsView() {
         onOpenChange={setFormOpen}
         product={editing}
         programs={programs}
+        categories={categories}
       />
 
       <ConfirmDeleteDialog

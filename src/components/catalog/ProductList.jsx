@@ -29,6 +29,7 @@ function EmptyState({ filtered, onCreate }) {
 export default function ProductList({
   products,
   programNames,
+  categoryNames,
   isFiltered,
   isLoading,
   hasNextPage,
@@ -60,6 +61,7 @@ export default function ProductList({
           key={product.id}
           product={product}
           programName={programNames[product.program_id]}
+          categoryName={categoryNames[product.category_id]}
           onEdit={onEdit}
           onChangeStatus={onChangeStatus}
           onDelete={onDelete}

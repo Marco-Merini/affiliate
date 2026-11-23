@@ -117,6 +117,7 @@ const productFields = {
   type: z.enum(["physical", "digital"]),
   status: z.enum(["active", "paused", "archived"]),
   program_id: z.string().max(64).nullable().optional(),
+  category_id: z.string().max(64).nullable().optional(),
   image_url: z.string().max(1200).nullable().optional(),
   current_price: z.number().min(0).nullable().optional(),
   previous_price: z.number().min(0).nullable().optional(),
@@ -134,6 +135,7 @@ export const listProducts = createServerFn({ method: "GET" })
       status: z.enum(["active", "paused", "archived"]).optional(),
       type: z.enum(["physical", "digital"]).optional(),
       program_id: z.string().max(64).optional(),
+      category_id: z.string().max(64).optional(),
       cursor: z.string().max(500).optional(),
     }),
   )
@@ -144,14 +146,16 @@ export const listProducts = createServerFn({ method: "GET" })
     if (data.status) query.status = data.status;
     if (data.type) query.type = data.type;
     if (data.program_id) query.program_id = data.program_id;
+    if (data.category_id) query.category_id = data.category_id;
 
-    const [page, programs] = await Promise.all([
+    const [page, programs, categories] = await Promise.all([
       db.entities.Product.filter(query, {
         sort: "-created_date",
         limit: 20,
         ...(data.cursor ? { cursor: data.cursor } : {}),
       }),
       db.entities.AffiliateProgram.list({ sort: "name", limit: 100 }),
+      db.entities.Category.list({ sort: "name", limit: 100 }),
     ]);
 
     return {
@@ -159,6 +163,7 @@ export const listProducts = createServerFn({ method: "GET" })
       has_more: Boolean(page?.has_more),
       next_cursor: page?.next_cursor ?? null,
       programs: programs?.items ?? [],
+      categories: categories?.items ?? [],
     };
   });
 
@@ -290,6 +295,85 @@ export const deleteProgram = createServerFn({ method: "POST" })
       "program.deleted",
       `Programa removido: ${program?.name ?? data.id}`,
       "AffiliateProgram",
+      data.id,
+    );
+    return { ok: true };
+  });
+
+const categoryFields = {
+  name: z.string().min(1).max(120),
+  description: z.string().max(1000).nullable().optional(),
+  is_active: z.boolean(),
+};
+
+export const listCategories = createServerFn({ method: "GET" })
+  .middleware([requireUser])
+  .handler(async ({ context }) => {
+    const db = context.getBase44();
+    const [page, aggregate] = await Promise.all([
+      db.entities.Category.list({ sort: "name", limit: 100 }),
+      db.entities.Product.aggregate({ groupBy: "category_id" }),
+    ]);
+
+    const counts = {};
+    (aggregate?.rows ?? []).forEach((row) => {
+      if (row.category_id) counts[row.category_id] = row.count;
+    });
+
+    return { items: page?.items ?? [], counts };
+  });
+
+export const createCategory = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object(categoryFields))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const created = await db.entities.Category.create(data);
+    await logActivity(
+      db,
+      "category.created",
+      `Categoria criada: ${created?.name ?? data.name}`,
+      "Category",
+      created?.id,
+    );
+    return created;
+  });
+
+export const updateCategory = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object(categoryFields).partial().extend({ id: z.string().min(1) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const { id, ...patch } = data;
+    const updated = await db.entities.Category.update(id, patch);
+    await logActivity(
+      db,
+      "category.updated",
+      `Categoria atualizada: ${updated?.name ?? patch.name ?? "categoria"}`,
+      "Category",
+      id,
+    );
+    return updated;
+  });
+
+export const deleteCategory = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ id: z.string().min(1) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const linked = await db.entities.Product.count({ category_id: data.id });
+    if (linked > 0) {
+      throw new Error(
+        `Esta categoria possui ${linked} produto(s) vinculado(s). Desvincule antes de excluir.`,
+      );
+    }
+    const category = await db.entities.Category.get(data.id).catch(() => null);
+    await db.entities.Category.delete(data.id);
+    await logActivity(
+      db,
+      "category.deleted",
+      `Categoria removida: ${category?.name ?? data.id}`,
+      "Category",
       data.id,
     );
     return { ok: true };

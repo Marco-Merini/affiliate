@@ -28,7 +28,7 @@ import {
 } from "@/lib/catalog";
 import { formatCurrency, relativeTime } from "@/lib/format";
 
-export default function ProductCard({ product, programName, onEdit, onChangeStatus, onDelete }) {
+export default function ProductCard({ product, programName, categoryName, onEdit, onChangeStatus, onDelete }) {
   return (
     <div className="flex gap-3.5 rounded-xl border border-border bg-card p-3.5 transition-colors hover:border-primary/25">
       <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
@@ -51,7 +51,7 @@ export default function ProductCard({ product, programName, onEdit, onChangeStat
           <div className="min-w-0">
             <p className="truncate text-[13.5px] font-semibold leading-tight">{product.name}</p>
             <p className="mt-1 truncate text-[11.5px] text-muted-foreground">
-              {programName ?? "Sem programa"} · {productTypeLabel(product.type)}
+              {programName ?? "Sem programa"} · {categoryName ?? "Sem categoria"}
             </p>
           </div>
 
