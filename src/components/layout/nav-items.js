@@ -10,12 +10,16 @@ import {
   Plug,
   Settings,
   Tags,
+  Target,
 } from "lucide-react";
 
 export const NAV_GROUPS = [
   {
     label: "Visão geral",
-    items: [{ label: "Dashboard", to: "/", icon: LayoutDashboard }],
+    items: [
+      { label: "Dashboard", to: "/", icon: LayoutDashboard },
+      { label: "Oportunidades", to: "/oportunidades", icon: Target },
+    ],
   },
   {
     label: "Catálogo",

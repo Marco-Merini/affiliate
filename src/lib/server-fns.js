@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth-middleware";
+import { computeOpportunityScore } from "@/lib/opportunity";
 
 const DAY_MS = 86400000;
 
@@ -377,4 +378,69 @@ export const deleteCategory = createServerFn({ method: "POST" })
       data.id,
     );
     return { ok: true };
+  });
+
+const signalFields = {
+  signal_volume: z.number().min(0).max(10).nullable().optional(),
+  signal_trend: z.number().min(0).max(10).nullable().optional(),
+  signal_demand: z.number().min(0).max(10).nullable().optional(),
+  signal_social: z.number().min(0).max(10).nullable().optional(),
+  signal_commission: z.number().min(0).max(10).nullable().optional(),
+  signal_reputation: z.number().min(0).max(10).nullable().optional(),
+  signal_conversion: z.number().min(0).max(10).nullable().optional(),
+  signal_saturation: z.number().min(0).max(10).nullable().optional(),
+};
+
+export const saveProductSignals = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ id: z.string().min(1), ...signalFields }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const { id, ...signals } = data;
+    return db.entities.Product.update(id, {
+      ...signals,
+      opportunity_score: computeOpportunityScore(signals),
+      signals_updated_at: new Date().toISOString(),
+    });
+  });
+
+export const listOpportunities = createServerFn({ method: "GET" })
+  .middleware([requireUser])
+  .validator(
+    z.object({
+      category_id: z.string().max(64).optional(),
+      type: z.enum(["physical", "digital"]).optional(),
+      cursor: z.string().max(500).optional(),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const query = { status: { $ne: "archived" } };
+    if (data.category_id) query.category_id = data.category_id;
+    if (data.type) query.type = data.type;
+
+    const [page, categories, programs, average, scored] = await Promise.all([
+      db.entities.Product.filter(query, {
+        sort: "-opportunity_score",
+        limit: 20,
+        ...(data.cursor ? { cursor: data.cursor } : {}),
+      }),
+      db.entities.Category.list({ sort: "name", limit: 100 }),
+      db.entities.AffiliateProgram.list({ sort: "name", limit: 100 }),
+      db.entities.Product.aggregate({
+        query: { ...query, opportunity_score: { $gte: 0 } },
+        avg: ["opportunity_score"],
+      }),
+      db.entities.Product.count({ ...query, opportunity_score: { $gte: 0 } }),
+    ]);
+
+    return {
+      items: page?.items ?? [],
+      has_more: Boolean(page?.has_more),
+      next_cursor: page?.next_cursor ?? null,
+      categories: categories?.items ?? [],
+      programs: programs?.items ?? [],
+      averageScore: average?.rows?.[0]?.avg_opportunity_score ?? null,
+      scored,
+    };
   });

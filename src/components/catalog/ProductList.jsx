@@ -39,6 +39,7 @@ export default function ProductList({
   onEdit,
   onChangeStatus,
   onDelete,
+  onAnalyze,
 }) {
   if (isLoading) {
     return (
@@ -65,6 +66,7 @@ export default function ProductList({
           onEdit={onEdit}
           onChangeStatus={onChangeStatus}
           onDelete={onDelete}
+          onAnalyze={onAnalyze}
         />
       ))}
 

@@ -8,6 +8,7 @@ import ProductFilters from "@/components/catalog/ProductFilters";
 import ProductList from "@/components/catalog/ProductList";
 import ProductFormDialog from "@/components/catalog/ProductFormDialog";
 import ConfirmDeleteDialog from "@/components/catalog/ConfirmDeleteDialog";
+import OpportunityDialog from "@/components/opportunity/OpportunityDialog";
 import { deleteProduct, listProducts, updateProduct } from "@/lib/server-fns";
 import { formatNumber } from "@/lib/format";
 
@@ -21,6 +22,7 @@ export default function ProductsView() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [analyzing, setAnalyzing] = useState(null);
 
   const queryClient = useQueryClient();
   const list = useServerFn(listProducts);
@@ -167,6 +169,7 @@ export default function ProductsView() {
           changeStatus.mutate({ id: product.id, nextStatus })
         }
         onDelete={(product) => setPendingDelete(product)}
+        onAnalyze={setAnalyzing}
       />
 
       <ProductFormDialog
@@ -175,6 +178,12 @@ export default function ProductsView() {
         product={editing}
         programs={programs}
         categories={categories}
+      />
+
+      <OpportunityDialog
+        open={Boolean(analyzing)}
+        onOpenChange={(open) => !open && setAnalyzing(null)}
+        product={analyzing}
       />
 
       <ConfirmDeleteDialog

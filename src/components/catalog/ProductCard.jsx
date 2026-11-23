@@ -6,6 +6,7 @@ import {
   PauseCircle,
   Pencil,
   PlayCircle,
+  Target,
   Trash2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Image } from "@/components/ui/image";
+import ScoreBadge from "@/components/opportunity/ScoreBadge";
 import {
   PRODUCT_STATUS_CLASS,
   PRODUCT_TYPE_CLASS,
@@ -28,7 +30,15 @@ import {
 } from "@/lib/catalog";
 import { formatCurrency, relativeTime } from "@/lib/format";
 
-export default function ProductCard({ product, programName, categoryName, onEdit, onChangeStatus, onDelete }) {
+export default function ProductCard({
+  product,
+  programName,
+  categoryName,
+  onEdit,
+  onChangeStatus,
+  onDelete,
+  onAnalyze,
+}) {
   return (
     <div className="flex gap-3.5 rounded-xl border border-border bg-card p-3.5 transition-colors hover:border-primary/25">
       <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
@@ -97,6 +107,10 @@ export default function ProductCard({ product, programName, categoryName, onEdit
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onAnalyze(product)}>
+                  <Target className="mr-2 h-3.5 w-3.5" />
+                  Analisar oportunidade
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
                   onClick={() => onDelete(product)}
@@ -116,6 +130,7 @@ export default function ProductCard({ product, programName, categoryName, onEdit
           >
             {productStatusLabel(product.status)}
           </Badge>
+          <ScoreBadge score={product.opportunity_score} />
           <Badge
             variant="outline"
             className={`rounded-md px-1.5 py-0 text-[10.5px] font-medium ${PRODUCT_TYPE_CLASS[product.type] ?? ""}`}

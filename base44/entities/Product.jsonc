@@ -1,7 +1,7 @@
 {
   "type": "object",
   "name": "Product",
-  "description": "Produto de terceiros divulgado pelo afiliado. O pre\u00e7o cadastrado \u00e9 uma refer\u00eancia e n\u00e3o \u00e9 atualizado automaticamente.",
+  "description": "Produto de terceiros divulgado pelo afiliado. O pre\u00e7o cadastrado \u00e9 uma refer\u00eancia e n\u00e3o \u00e9 atualizado automaticamente. O score de oportunidade \u00e9 calculado a partir dos sinais registrados manualmente.",
   "properties": {
     "name": {
       "type": "string",
@@ -73,6 +73,47 @@
     "notes": {
       "type": "string",
       "description": "Observa\u00e7\u00f5es internas"
+    },
+    "opportunity_score": {
+      "type": "number",
+      "description": "Score de oportunidade de 0 a 100 calculado a partir dos sinais"
+    },
+    "signal_volume": {
+      "type": "number",
+      "description": "Volume de vendas atual (0 a 10)"
+    },
+    "signal_trend": {
+      "type": "number",
+      "description": "Tend\u00eancia de crescimento das vendas (0 a 10)"
+    },
+    "signal_demand": {
+      "type": "number",
+      "description": "Procura e popularidade do produto (0 a 10)"
+    },
+    "signal_social": {
+      "type": "number",
+      "description": "Crescimento de interesse em redes sociais e buscas (0 a 10)"
+    },
+    "signal_commission": {
+      "type": "number",
+      "description": "Atratividade da comiss\u00e3o oferecida (0 a 10)"
+    },
+    "signal_reputation": {
+      "type": "number",
+      "description": "Reputa\u00e7\u00e3o do produto e do vendedor (0 a 10)"
+    },
+    "signal_conversion": {
+      "type": "number",
+      "description": "Potencial de convers\u00e3o (0 a 10)"
+    },
+    "signal_saturation": {
+      "type": "number",
+      "description": "Satura\u00e7\u00e3o da divulga\u00e7\u00e3o: quanto maior, mais concorrido (0 a 10)"
+    },
+    "signals_updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data da \u00faltima an\u00e1lise de oportunidade"
     }
   },
   "required": [
