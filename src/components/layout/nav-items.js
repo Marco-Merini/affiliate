@@ -20,8 +20,8 @@ export const NAV_GROUPS = [
   {
     label: "Catálogo",
     items: [
-      { label: "Produtos", icon: Package, phase: 2 },
-      { label: "Programas", icon: Network, phase: 2 },
+      { label: "Produtos", to: "/produtos", icon: Package },
+      { label: "Programas", to: "/programas", icon: Network },
       { label: "Categorias", icon: Tags, phase: 2 },
     ],
   },
