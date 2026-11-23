@@ -703,9 +703,39 @@ export const updatePost = createServerFn({ method: "POST" })
     const db = context.getBase44();
     const { id, ...patch } = data;
     const existing = await db.entities.Post.get(id).catch(() => null);
+
+    const contentKeys = [
+      "title",
+      "platform",
+      "format",
+      "campaign_id",
+      "product_id",
+      "affiliate_link_id",
+      "caption",
+      "description",
+      "cta",
+      "hashtags",
+      "affiliate_disclosure",
+    ];
+    const contentChanged = Object.keys(patch).some((key) => contentKeys.includes(key));
+    const losesApproval = contentChanged && ["approved", "scheduled"].includes(existing?.status);
+
+    if (losesApproval) {
+      await db.entities.ScheduledPost.deleteMany({ post_id: id, status: "pending" });
+    }
+
     const updated = await db.entities.Post.update(id, {
       ...patch,
       version: (existing?.version ?? 1) + 1,
+      ...(losesApproval
+        ? {
+            status: "draft",
+            approved_version: null,
+            approved_at: null,
+            approved_snapshot: null,
+            scheduled_for: null,
+          }
+        : {}),
     });
     await logActivity(
       db,
@@ -770,4 +800,223 @@ export const deletePostAsset = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await context.getBase44().entities.PostAsset.delete(data.id);
     return { ok: true };
+  });
+
+const reviewableStatuses = ["draft", "changes_requested", "rejected"];
+
+export const submitPostForApproval = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ id: z.string().min(1) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const post = await db.entities.Post.get(data.id);
+    if (!reviewableStatuses.includes(post.status)) {
+      throw new Error(
+        "Só rascunhos, publicações com alterações solicitadas ou reprovadas podem ser enviadas para aprovação.",
+      );
+    }
+    const updated = await db.entities.Post.update(data.id, {
+      status: "pending_approval",
+      review_note: null,
+    });
+    await logActivity(
+      db,
+      "post.submitted",
+      `Publicação enviada para aprovação: ${post.title}`,
+      "Post",
+      data.id,
+    );
+    return updated;
+  });
+
+export const approvePost = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ id: z.string().min(1), note: z.string().max(1000).nullable().optional() }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const post = await db.entities.Post.get(data.id);
+    if (post.status !== "pending_approval") {
+      throw new Error("Esta publicação não está aguardando aprovação.");
+    }
+    const now = new Date().toISOString();
+    const snapshot = JSON.stringify({
+      title: post.title,
+      platform: post.platform,
+      format: post.format,
+      caption: post.caption ?? null,
+      description: post.description ?? null,
+      cta: post.cta ?? null,
+      hashtags: post.hashtags ?? [],
+      affiliate_disclosure: post.affiliate_disclosure ?? null,
+      affiliate_link_id: post.affiliate_link_id ?? null,
+      product_id: post.product_id ?? null,
+      campaign_id: post.campaign_id ?? null,
+    });
+    const updated = await db.entities.Post.update(data.id, {
+      status: "approved",
+      approved_version: post.version ?? 1,
+      approved_at: now,
+      approved_snapshot: snapshot,
+      review_note: data.note ?? null,
+      reviewed_at: now,
+    });
+    await logActivity(
+      db,
+      "post.approved",
+      `Publicação aprovada (v${post.version ?? 1}): ${post.title}`,
+      "Post",
+      data.id,
+    );
+    return updated;
+  });
+
+export const requestPostChanges = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ id: z.string().min(1), note: z.string().min(3).max(1000) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const post = await db.entities.Post.get(data.id);
+    if (post.status !== "pending_approval") {
+      throw new Error("Esta publicação não está aguardando aprovação.");
+    }
+    const updated = await db.entities.Post.update(data.id, {
+      status: "changes_requested",
+      review_note: data.note,
+      reviewed_at: new Date().toISOString(),
+    });
+    await logActivity(
+      db,
+      "post.changes_requested",
+      `Alterações solicitadas em: ${post.title}`,
+      "Post",
+      data.id,
+    );
+    return updated;
+  });
+
+export const rejectPost = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ id: z.string().min(1), note: z.string().min(3).max(1000) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const post = await db.entities.Post.get(data.id);
+    if (post.status !== "pending_approval") {
+      throw new Error("Esta publicação não está aguardando aprovação.");
+    }
+    const updated = await db.entities.Post.update(data.id, {
+      status: "rejected",
+      review_note: data.note,
+      reviewed_at: new Date().toISOString(),
+    });
+    await logActivity(db, "post.rejected", `Publicação reprovada: ${post.title}`, "Post", data.id);
+    return updated;
+  });
+
+export const getApprovalCounts = createServerFn({ method: "GET" })
+  .middleware([requireUser])
+  .handler(async ({ context }) => {
+    const rows = await context.getBase44().entities.Post.aggregate({ groupBy: "status" });
+    const counts = {};
+    (rows?.rows ?? []).forEach((row) => {
+      counts[row.status] = row.count;
+    });
+    return counts;
+  });
+
+export const getCalendar = createServerFn({ method: "GET" })
+  .middleware([requireUser])
+  .validator(
+    z.object({
+      month: z.string().regex(/^\d{4}-\d{2}$/),
+      platform: z.enum(["instagram", "facebook", "tiktok", "pinterest"]).optional(),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const [year, month] = data.month.split("-").map(Number);
+    const start = new Date(Date.UTC(year, month - 1, 1, 3, 0, 0));
+    const end = new Date(Date.UTC(year, month, 1, 3, 0, 0));
+
+    const query = { scheduled_for: { $gte: start.toISOString(), $lt: end.toISOString() } };
+    if (data.platform) query.platform = data.platform;
+
+    const [page, readyPage, queue] = await Promise.all([
+      db.entities.Post.filter(query, { sort: "scheduled_for", limit: 200 }),
+      db.entities.Post.filter({ status: "approved" }, { sort: "-approved_at", limit: 50 }),
+      db.entities.ScheduledPost.aggregate({
+        query: { scheduled_for: { $gte: start.toISOString(), $lt: end.toISOString() } },
+        groupBy: "status",
+      }),
+    ]);
+
+    return {
+      month: data.month,
+      items: page?.items ?? [],
+      ready: readyPage?.items ?? [],
+      queue: (queue?.rows ?? []).map((row) => ({ status: row.status, count: row.count })),
+    };
+  });
+
+export const schedulePost = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ id: z.string().min(1), scheduled_for: z.string().min(10).max(40) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const post = await db.entities.Post.get(data.id);
+    if (post.status !== "approved") {
+      throw new Error("Só publicações aprovadas podem ser agendadas.");
+    }
+    if ((post.approved_version ?? 0) !== (post.version ?? 1)) {
+      throw new Error("A versão atual do conteúdo não está aprovada. Envie para revisão novamente.");
+    }
+
+    const scheduledFor = new Date(data.scheduled_for).toISOString();
+    const queued = await db.entities.ScheduledPost.count({ post_id: data.id, status: "pending" });
+    if (queued === 0) {
+      await db.entities.ScheduledPost.create({
+        post_id: data.id,
+        platform: post.platform,
+        scheduled_for: scheduledFor,
+        status: "pending",
+        attempts: 0,
+        idempotency_key: `${data.id}-v${post.version ?? 1}-${Date.now()}`,
+      });
+    }
+
+    const updated = await db.entities.Post.update(data.id, {
+      status: "scheduled",
+      scheduled_for: scheduledFor,
+    });
+    await logActivity(
+      db,
+      "post.scheduled",
+      `Publicação agendada: ${post.title}`,
+      "Post",
+      data.id,
+    );
+    return updated;
+  });
+
+export const unschedulePost = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ id: z.string().min(1) }))
+  .handler(async ({ data, context }) => {
+    const db = context.getBase44();
+    const post = await db.entities.Post.get(data.id);
+    if (post.status !== "scheduled") {
+      throw new Error("Esta publicação não está agendada.");
+    }
+    await db.entities.ScheduledPost.deleteMany({ post_id: data.id, status: "pending" });
+    const updated = await db.entities.Post.update(data.id, {
+      status: "approved",
+      scheduled_for: null,
+    });
+    await logActivity(
+      db,
+      "post.unscheduled",
+      `Agendamento cancelado: ${post.title}`,
+      "Post",
+      data.id,
+    );
+    return updated;
   });

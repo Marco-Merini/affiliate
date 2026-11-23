@@ -24,6 +24,20 @@ export const formatDateTime = (value) => {
   });
 };
 
+export const formatTime = (value) => {
+  if (!value) return "—";
+  return new Date(value).toLocaleTimeString("pt-BR", {
+    timeZone: TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+export const dayKey = (value) => new Date(value).toLocaleDateString("sv-SE", { timeZone: TZ });
+
+export const monthKey = (value = new Date()) =>
+  new Date(value).toLocaleDateString("sv-SE", { timeZone: TZ }).slice(0, 7);
+
 export const formatLongDate = (value = new Date()) =>
   new Date(value).toLocaleDateString("pt-BR", {
     timeZone: TZ,

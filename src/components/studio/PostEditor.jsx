@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, CalendarDays, Save, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,8 @@ import AssetUploader from "@/components/studio/AssetUploader";
 import ConfirmDeleteDialog from "@/components/catalog/ConfirmDeleteDialog";
 import { statusLabel } from "@/lib/constants";
 import { POST_STATUS_CLASS, hashtagsToText, parseHashtags } from "@/lib/studio";
-import { deletePost, getPostEditor, updatePost } from "@/lib/server-fns";
+import { deletePost, getPostEditor, submitPostForApproval, updatePost } from "@/lib/server-fns";
+import { formatDateTime } from "@/lib/format";
 
 const fromPost = (post) => ({
   title: post.title ?? "",
@@ -37,6 +38,7 @@ export default function PostEditor({ postId }) {
   const fetchEditor = useServerFn(getPostEditor);
   const update = useServerFn(updatePost);
   const remove = useServerFn(deletePost);
+  const submitForApproval = useServerFn(submitPostForApproval);
 
   const { data, isLoading } = useQuery({
     queryKey: ["post-editor", postId],
@@ -67,6 +69,18 @@ export default function PostEditor({ postId }) {
       navigate({ to: "/estudio" });
     },
     onError: (error) => toast.error(error?.message ?? "Não foi possível excluir a publicação."),
+  });
+
+  const submit = useMutation({
+    mutationFn: () => submitForApproval({ data: { id: postId } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["post-editor", postId] });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["approval-counts"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] });
+      toast.success("Publicação enviada para aprovação.");
+    },
+    onError: (error) => toast.error(error?.message ?? "Não foi possível enviar para aprovação."),
   });
 
   const handleSave = () => {
@@ -132,6 +146,37 @@ export default function PostEditor({ postId }) {
         </Badge>
         <span className="text-[11px] text-muted-foreground">versão {post.version ?? 1}</span>
 
+        {["draft", "changes_requested", "rejected"].includes(post.status) && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => submit.mutate()}
+            disabled={submit.isPending}
+          >
+            <Send className="mr-1.5 h-3.5 w-3.5" />
+            {submit.isPending ? "Enviando..." : "Enviar para aprovação"}
+          </Button>
+        )}
+
+        {post.status === "approved" && (
+          <Button asChild variant="outline" size="sm">
+            <Link to="/calendario">
+              <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
+              Agendar no calendário
+            </Link>
+          </Button>
+        )}
+
+        {post.status === "scheduled" && post.scheduled_for && (
+          <span className="text-[11px] text-muted-foreground">
+            Agendada para {formatDateTime(post.scheduled_for)}
+          </span>
+        )}
+
+        {post.status === "pending_approval" && (
+          <span className="text-[11px] text-muted-foreground">Aguardando revisão</span>
+        )}
+
         <div className="ml-auto flex items-center gap-2">
           <Button
             variant="ghost"
@@ -148,6 +193,13 @@ export default function PostEditor({ postId }) {
           </Button>
         </div>
       </div>
+
+      {post.review_note && ["changes_requested", "rejected"].includes(post.status) && (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[12px] leading-relaxed text-amber-800 dark:text-amber-300">
+          <span className="font-semibold">Revisão: </span>
+          {post.review_note}
+        </div>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <PostContentForm

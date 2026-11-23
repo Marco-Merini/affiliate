@@ -34,8 +34,8 @@ export const NAV_GROUPS = [
     items: [
       { label: "Campanhas", to: "/campanhas", icon: Megaphone },
       { label: "Estúdio de conteúdo", to: "/estudio", icon: PenLine },
-      { label: "Aprovações", icon: CheckCircle2, phase: 4 },
-      { label: "Calendário", icon: CalendarDays, phase: 4 },
+      { label: "Aprovações", to: "/aprovacoes", icon: CheckCircle2 },
+      { label: "Calendário", to: "/calendario", icon: CalendarDays },
     ],
   },
   {
