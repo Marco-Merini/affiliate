@@ -1,0 +1,121 @@
+{
+  "type": "object",
+  "name": "Campaign",
+  "description": "Campanha de divulga\u00e7\u00e3o vinculada a um produto. Criar uma campanha nunca publica nada automaticamente.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome da campanha"
+    },
+    "description": {
+      "type": "string",
+      "description": "Objetivo e contexto da campanha"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Produto divulgado"
+    },
+    "objective": {
+      "type": "string",
+      "enum": [
+        "sales",
+        "awareness",
+        "engagement",
+        "leads"
+      ],
+      "enumColors": [
+        "green",
+        "blue",
+        "purple",
+        "yellow"
+      ],
+      "description": "Objetivo principal"
+    },
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "instagram",
+          "facebook",
+          "tiktok",
+          "pinterest"
+        ]
+      },
+      "description": "Plataformas de destino"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "In\u00edcio previsto"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fim previsto"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "paused",
+        "finished",
+        "cancelled"
+      ],
+      "enumColors": [
+        "gray",
+        "green",
+        "yellow",
+        "blue",
+        "red"
+      ],
+      "description": "Situa\u00e7\u00e3o da campanha"
+    }
+  },
+  "required": [
+    "name",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

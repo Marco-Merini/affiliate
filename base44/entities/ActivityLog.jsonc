@@ -1,0 +1,72 @@
+{
+  "type": "object",
+  "name": "ActivityLog",
+  "description": "Hist\u00f3rico do que aconteceu no painel: cadastros, aprova\u00e7\u00f5es, agendamentos e falhas.",
+  "properties": {
+    "action": {
+      "type": "string",
+      "description": "A\u00e7\u00e3o executada, ex.: product.created"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o leg\u00edvel da a\u00e7\u00e3o"
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "Tipo de registro afetado"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "Identificador do registro afetado"
+    },
+    "details": {
+      "type": "string",
+      "description": "Detalhes adicionais em texto"
+    }
+  },
+  "required": [
+    "action",
+    "description"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

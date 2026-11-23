@@ -1,0 +1,114 @@
+{
+  "type": "object",
+  "name": "ScheduledPost",
+  "description": "Fila persistente de distribui\u00e7\u00e3o. Cada registro representa uma tentativa de publica\u00e7\u00e3o de um conte\u00fado aprovado.",
+  "properties": {
+    "post_id": {
+      "type": "string",
+      "description": "Publica\u00e7\u00e3o a ser distribu\u00edda"
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "instagram",
+        "facebook",
+        "tiktok",
+        "pinterest"
+      ],
+      "enumColors": [
+        "pink",
+        "blue",
+        "gray",
+        "red"
+      ],
+      "description": "Plataforma de destino"
+    },
+    "scheduled_for": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Hor\u00e1rio previsto de execu\u00e7\u00e3o"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "running",
+        "published",
+        "failed",
+        "cancelled"
+      ],
+      "enumColors": [
+        "blue",
+        "yellow",
+        "green",
+        "red",
+        "gray"
+      ],
+      "description": "Situa\u00e7\u00e3o na fila"
+    },
+    "attempts": {
+      "type": "number",
+      "description": "Tentativas j\u00e1 realizadas"
+    },
+    "last_attempt_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Momento da \u00faltima tentativa"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Impede publicar o mesmo conte\u00fado duas vezes"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Retorno de erro da plataforma"
+    }
+  },
+  "required": [
+    "post_id",
+    "platform",
+    "scheduled_for",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "type": "object",
+  "name": "Post",
+  "description": "Publica\u00e7\u00e3o preparada no est\u00fadio de conte\u00fado. S\u00f3 pode ser distribu\u00edda com aprova\u00e7\u00e3o v\u00e1lida.",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "T\u00edtulo interno da publica\u00e7\u00e3o"
+    },
+    "caption": {
+      "type": "string",
+      "description": "Legenda final"
+    },
+    "description": {
+      "type": "string",
+      "description": "Texto de apoio"
+    },
+    "cta": {
+      "type": "string",
+      "description": "Chamada para a\u00e7\u00e3o"
+    },
+    "hashtags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Hashtags sem o s\u00edmbolo #"
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "instagram",
+        "facebook",
+        "tiktok",
+        "pinterest"
+      ],
+      "enumColors": [
+        "pink",
+        "blue",
+        "gray",
+        "red"
+      ],
+      "description": "Plataforma de destino"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "single_image",
+        "carousel"
+      ],
+      "enumColors": [
+        "blue",
+        "purple"
+      ],
+      "description": "Imagem \u00fanica ou carrossel"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending_approval",
+        "changes_requested",
+        "rejected",
+        "approved",
+        "scheduled",
+        "publishing",
+        "published",
+        "failed",
+        "cancelled"
+      ],
+      "enumColors": [
+        "gray",
+        "yellow",
+        "yellow",
+        "red",
+        "green",
+        "blue",
+        "blue",
+        "green",
+        "red",
+        "gray"
+      ],
+      "description": "Estado no fluxo de aprova\u00e7\u00e3o"
+    },
+    "campaign_id": {
+      "type": "string",
+      "description": "Campanha relacionada"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Produto divulgado"
+    },
+    "affiliate_link_id": {
+      "type": "string",
+      "description": "Link de afiliado usado na publica\u00e7\u00e3o"
+    },
+    "version": {
+      "type": "number",
+      "description": "Vers\u00e3o atual do conte\u00fado"
+    },
+    "approved_version": {
+      "type": "number",
+      "description": "Vers\u00e3o que recebeu aprova\u00e7\u00e3o"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data da aprova\u00e7\u00e3o vigente"
+    },
+    "approved_snapshot": {
+      "type": "string",
+      "description": "C\u00f3pia do conte\u00fado aprovado (JSON serializado)"
+    },
+    "scheduled_for": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data e hora de publica\u00e7\u00e3o"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Momento da publica\u00e7\u00e3o confirmada"
+    },
+    "external_post_id": {
+      "type": "string",
+      "description": "Identificador da publica\u00e7\u00e3o na plataforma"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Chave de idempot\u00eancia da distribui\u00e7\u00e3o"
+    },
+    "failure_reason": {
+      "type": "string",
+      "description": "Motivo da \u00faltima falha"
+    },
+    "affiliate_disclosure": {
+      "type": "string",
+      "description": "Aviso de afiliado exibido no conte\u00fado"
+    }
+  },
+  "required": [
+    "title",
+    "platform",
+    "format",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

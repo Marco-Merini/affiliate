@@ -1,0 +1,106 @@
+{
+  "type": "object",
+  "name": "SocialAccount",
+  "description": "Conta social conectada via OAuth oficial. Nenhum token \u00e9 exposto ao frontend: guarde apenas a refer\u00eancia do segredo.",
+  "properties": {
+    "platform": {
+      "type": "string",
+      "enum": [
+        "instagram",
+        "facebook",
+        "tiktok",
+        "pinterest"
+      ],
+      "enumColors": [
+        "pink",
+        "blue",
+        "gray",
+        "red"
+      ],
+      "description": "Plataforma da conta"
+    },
+    "account_name": {
+      "type": "string",
+      "description": "Nome de exibi\u00e7\u00e3o da conta ou p\u00e1gina"
+    },
+    "external_account_id": {
+      "type": "string",
+      "description": "Identificador da conta na plataforma"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "disconnected",
+        "connected",
+        "expired",
+        "error"
+      ],
+      "enumColors": [
+        "gray",
+        "green",
+        "yellow",
+        "red"
+      ],
+      "description": "Situa\u00e7\u00e3o da conex\u00e3o"
+    },
+    "connection_reference": {
+      "type": "string",
+      "description": "Refer\u00eancia do token armazenado fora do banco"
+    },
+    "connected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data da conex\u00e3o"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Expira\u00e7\u00e3o do token"
+    }
+  },
+  "required": [
+    "platform",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
