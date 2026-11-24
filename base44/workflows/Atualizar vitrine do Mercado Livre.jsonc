@@ -1,6 +1,23 @@
 {
   "name": "Atualizar vitrine do Mercado Livre",
-  "description": "L\u00ea a lista de afiliados do Mercado Livre e atualiza pre\u00e7os, avalia\u00e7\u00f5es e novos produtos da vitrine a cada 3 horas.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "America/Sao_Paulo",
+      "interval_value": 5,
+      "interval_unit": "minutes",
+      "interval_anchor": "2026-11-24T23:50:00Z",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "L\u00ea a lista de afiliados do Mercado Livre e atualiza pre\u00e7os, avalia\u00e7\u00f5es e novos produtos da vitrine a cada 5 minutos.",
   "definition": {
     "document": {
       "dsl": "1.0.0",
@@ -24,22 +41,5 @@
         }
       }
     ]
-  },
-  "trigger": {
-    "condition": null,
-    "config": {
-      "trigger_type": "scheduled",
-      "events": [],
-      "schedule_mode": "recurring",
-      "cron_expression": "0 */3 * * *",
-      "one_time_date": null,
-      "timezone": "America/Sao_Paulo",
-      "interval_value": null,
-      "interval_unit": null,
-      "interval_anchor": null,
-      "ends_type": "never",
-      "ends_on_date": null,
-      "ends_after_count": null
-    }
   }
 }
