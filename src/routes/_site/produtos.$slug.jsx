@@ -158,7 +158,7 @@ function ProductPage() {
                 {...(external ? { target: "_blank" } : {})}
                 className={cn(buttonVariants({ size: "lg" }), "h-14 w-full rounded-full text-[15px]")}
               >
-                Ver oferta{product.marketplace ? ` em ${product.marketplace}` : ""}
+                Comprar{product.marketplace ? ` em ${product.marketplace}` : ""}
                 <ExternalLink className="ml-2 h-4 w-4" aria-hidden="true" />
               </a>
             ) : (
