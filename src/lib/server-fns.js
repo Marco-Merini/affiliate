@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireUser } from "@/lib/auth-middleware";
+import { requireAdmin, requireUser } from "@/lib/auth-middleware";
 import { computeOpportunityScore } from "@/lib/opportunity";
-import { slugify } from "@/lib/seo";
+import { safeHttpUrl, slugify } from "@/lib/seo";
 
 const DAY_MS = 86400000;
 
@@ -124,7 +124,14 @@ const productFields = {
   current_price: z.number().min(0).nullable().optional(),
   previous_price: z.number().min(0).nullable().optional(),
   commission_percent: z.number().min(0).max(100).nullable().optional(),
-  affiliate_url: z.string().max(1500).nullable().optional(),
+  affiliate_url: z
+    .string()
+    .max(1500)
+    .refine((value) => !value || safeHttpUrl(value) !== null, {
+      message: "O link de afiliado deve ser uma URL http:// ou https:// válida.",
+    })
+    .nullable()
+    .optional(),
   notes: z.string().max(4000).nullable().optional(),
   price_checked_at: z.string().max(40).nullable().optional(),
 };
@@ -833,7 +840,7 @@ export const submitPostForApproval = createServerFn({ method: "POST" })
   });
 
 export const approvePost = createServerFn({ method: "POST" })
-  .middleware([requireUser])
+  .middleware([requireAdmin])
   .validator(z.object({ id: z.string().min(1), note: z.string().max(1000).nullable().optional() }))
   .handler(async ({ data, context }) => {
     const db = context.getBase44();
@@ -874,7 +881,7 @@ export const approvePost = createServerFn({ method: "POST" })
   });
 
 export const requestPostChanges = createServerFn({ method: "POST" })
-  .middleware([requireUser])
+  .middleware([requireAdmin])
   .validator(z.object({ id: z.string().min(1), note: z.string().min(3).max(1000) }))
   .handler(async ({ data, context }) => {
     const db = context.getBase44();
@@ -898,7 +905,7 @@ export const requestPostChanges = createServerFn({ method: "POST" })
   });
 
 export const rejectPost = createServerFn({ method: "POST" })
-  .middleware([requireUser])
+  .middleware([requireAdmin])
   .validator(z.object({ id: z.string().min(1), note: z.string().min(3).max(1000) }))
   .handler(async ({ data, context }) => {
     const db = context.getBase44();

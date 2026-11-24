@@ -50,6 +50,24 @@ export const requireUser = createMiddleware({ type: "function" }).server(async (
   return next({ context: { user } });
 });
 
+// Admin-only server function: `createServerFn().middleware([requireAdmin])` answers anonymous
+// callers with 401 and signed-in non-admins with 403, and sets `context.user` like requireUser.
+export const requireAdmin = createMiddleware({ type: "function" }).server(async ({ next, context }) => {
+  const user = await currentUser(context);
+  if (!user) {
+    setResponseStatus(401);
+    throw Object.assign(new Error("Unauthorized"), { status: 401, code: "UNAUTHORIZED" });
+  }
+  if (user.role !== "admin") {
+    setResponseStatus(403);
+    throw Object.assign(new Error("Apenas administradores podem executar esta ação."), {
+      status: 403,
+      code: "FORBIDDEN",
+    });
+  }
+  return next({ context: { user } });
+});
+
 // The same for a server route: `server: { middleware: [requireUserRoute], handlers }` answers
 // anonymous callers with 401 and sets `context.user`. Only on src/routes/api/* files: a route's
 // middleware also runs for every route under it, and page navigations carry no token.

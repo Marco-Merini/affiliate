@@ -24,10 +24,24 @@ export const discountPercent = (current, previous) => {
   return Math.round(((before - price) / before) * 100);
 };
 
+// Only absolute http(s) URLs are safe to render as an href: anything else
+// (javascript:, data:, vbscript:, relative junk) is discarded.
+export const safeHttpUrl = (value) => {
+  const raw = String(value ?? "").trim();
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+};
+
 export const affiliateHref = (product, links = []) => {
   const primary = links.find((link) => link.is_primary) ?? links[0];
   if (primary?.id) return `/api/r/${primary.id}?p=direto`;
-  return product?.affiliate_url || null;
+  return safeHttpUrl(product?.affiliate_url);
 };
 
 export const buildHead = ({

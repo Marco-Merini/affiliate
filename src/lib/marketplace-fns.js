@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireUser } from "@/lib/auth-middleware";
+import { requireAdmin, requireUser } from "@/lib/auth-middleware";
 import { DEFAULT_BASE_URL, slugify } from "@/lib/seo";
 
 const MISSING_CREDENTIALS =
@@ -50,7 +50,7 @@ export const getMercadoLivreStatus = createServerFn({ method: "GET" })
   });
 
 export const getMercadoLivreAuthUrl = createServerFn({ method: "GET" })
-  .middleware([requireUser])
+  .middleware([requireAdmin])
   .validator(z.object({}))
   .handler(async () => {
     const { mlCredentials, buildAuthUrl } = await loadMl();
@@ -60,7 +60,7 @@ export const getMercadoLivreAuthUrl = createServerFn({ method: "GET" })
   });
 
 export const disconnectMercadoLivre = createServerFn({ method: "POST" })
-  .middleware([requireUser])
+  .middleware([requireAdmin])
   .validator(z.object({}))
   .handler(async ({ context }) => {
     await context
@@ -70,7 +70,7 @@ export const disconnectMercadoLivre = createServerFn({ method: "POST" })
   });
 
 export const searchMercadoLivreProducts = createServerFn({ method: "POST" })
-  .middleware([requireUser])
+  .middleware([requireAdmin])
   .validator(z.object({ query: z.string().trim().min(2).max(80) }))
   .handler(async ({ data, context }) => {
     const { mlCredentials, getAccessToken, mlGet } = await loadMl();
@@ -112,7 +112,7 @@ const importItem = {
 };
 
 export const importMercadoLivreProducts = createServerFn({ method: "POST" })
-  .middleware([requireUser])
+  .middleware([requireAdmin])
   .validator(
     z.object({
       category_id: z.string().max(64).nullable().optional(),

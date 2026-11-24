@@ -30,6 +30,7 @@ import {
   productTypeLabel,
 } from "@/lib/catalog";
 import { formatCurrency, relativeTime } from "@/lib/format";
+import { safeHttpUrl } from "@/lib/seo";
 
 export default function ProductCard({
   product,
@@ -68,10 +69,10 @@ export default function ProductCard({
           </div>
 
           <div className="flex items-center gap-1">
-            {hasValue(product.affiliate_url) && (
+            {safeHttpUrl(product.affiliate_url) && (
               <Button asChild variant="ghost" size="icon" className="h-7 w-7">
                 <a
-                  href={product.affiliate_url}
+                  href={safeHttpUrl(product.affiliate_url)}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Abrir link de afiliado"
