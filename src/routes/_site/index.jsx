@@ -29,8 +29,7 @@ export const Route = createFileRoute("/_site/")({
 });
 
 function StorefrontHome() {
-  const { settings, categories, popular, offers, rated, articles, totalProducts } =
-    Route.useLoaderData();
+  const { settings, categories, popular, offers, rated, articles } = Route.useLoaderData();
 
   return (
     <div>
@@ -158,7 +157,6 @@ function EmptyStorefront() {
       <Link to="/categorias" className="mt-1 text-sm font-semibold text-primary hover:underline">
         Ver categorias
       </Link>
-      {totalProducts === 0 ? <span className="sr-only">Nenhum produto publicado</span> : null}
     </div>
   );
 }
