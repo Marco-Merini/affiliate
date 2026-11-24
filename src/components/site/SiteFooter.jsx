@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import Brand from "@/components/site/Brand";
-import { DEFAULT_DISCLOSURE } from "@/lib/seo";
 
 const EXPLORE = [
   { label: "Todos os produtos", to: "/produtos" },
@@ -17,30 +16,21 @@ const LEGAL = [
 
 export default function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-muted/30">
-      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4">
+    <footer className="bg-footer text-footer-foreground">
+      <div className="mx-auto grid w-full max-w-[120rem] gap-10 px-4 py-14 sm:px-6 md:grid-cols-4">
         <div className="md:col-span-2">
-          <Brand subtitle="Recomendações independentes" />
-          <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-            Selecionamos produtos de terceiros, comparamos o que realmente importa e indicamos
-            onde comprar. Você compra direto no marketplace parceiro, com a mesma garantia da loja.
-          </p>
-          <p className="mt-4 max-w-sm rounded-lg border border-border bg-background p-3 text-xs leading-relaxed text-muted-foreground">
-            {DEFAULT_DISCLOSURE}
+          <Brand tone="dark" />
+          <p className="mt-4 max-w-sm text-sm leading-relaxed">
+            Ofertas e produtos selecionados dos principais marketplaces.
           </p>
         </div>
 
         <nav aria-label="Explorar">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Explorar
-          </p>
-          <ul className="mt-3 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/50">Explorar</p>
+          <ul className="mt-4 space-y-2.5">
             {EXPLORE.map((item) => (
               <li key={item.to}>
-                <Link
-                  to={item.to}
-                  className="text-sm text-foreground/80 transition-colors hover:text-foreground"
-                >
+                <Link to={item.to} className="text-sm transition-colors hover:text-white">
                   {item.label}
                 </Link>
               </li>
@@ -49,16 +39,13 @@ export default function SiteFooter() {
         </nav>
 
         <nav aria-label="Institucional">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/50">
             Institucional
           </p>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-4 space-y-2.5">
             {LEGAL.map((item) => (
               <li key={item.to}>
-                <Link
-                  to={item.to}
-                  className="text-sm text-foreground/80 transition-colors hover:text-foreground"
-                >
+                <Link to={item.to} className="text-sm transition-colors hover:text-white">
                   {item.label}
                 </Link>
               </li>
@@ -67,11 +54,13 @@ export default function SiteFooter() {
         </nav>
       </div>
 
-      <div className="border-t border-border py-5">
-        <p className="mx-auto w-full max-w-6xl px-4 text-center text-xs text-muted-foreground sm:px-6">
-          AffiliateFlow · Conteúdo de recomendações com links de afiliados. Preços e
-          disponibilidade são definidos pelos marketplaces parceiros.
-        </p>
+      <div className="border-t border-footer-border">
+        <div className="mx-auto flex w-full max-w-[120rem] flex-col items-center justify-between gap-2 px-4 py-5 text-[13px] sm:flex-row sm:px-6">
+          <p>Radar de Ofertas · Todos os direitos reservados</p>
+          <Link to="/painel" className="transition-colors hover:text-white">
+            Painel
+          </Link>
+        </div>
       </div>
     </footer>
   );

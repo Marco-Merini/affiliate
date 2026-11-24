@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useTheme } from "next-themes";
-import { LayoutDashboard, Menu, Moon, Search, Sun } from "lucide-react";
+import { Menu, Moon, Search, Sun } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import Brand from "@/components/site/Brand";
+import SearchBar from "@/components/site/SearchBar";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -24,13 +25,41 @@ export default function SiteHeader() {
   const isDark = mounted && resolvedTheme === "dark";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-4 sm:px-6">
-        <Link to="/" aria-label="AffiliateFlow, página inicial" className="mr-2">
+    <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
+      <div className="mx-auto flex h-[60px] w-full max-w-[120rem] items-center gap-3 px-4 sm:h-[72px] sm:px-6">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="rounded-full lg:hidden" aria-label="Abrir menu">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[300px]">
+            <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
+            <div className="mt-2">
+              <Brand />
+            </div>
+            <div className="mt-5">
+              <SearchBar placeholder="Buscar produtos" />
+            </div>
+            <nav aria-label="Navegação mobile" className="mt-4 flex flex-col">
+              {NAV.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="flex h-14 items-center border-b border-border text-[15px] font-medium"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </SheetContent>
+        </Sheet>
+
+        <Link to="/" aria-label="Radar de Ofertas, página inicial" className="shrink-0">
           <Brand />
         </Link>
 
-        <nav aria-label="Navegação principal" className="hidden items-center gap-1 md:flex">
+        <nav aria-label="Navegação principal" className="ml-4 hidden items-center gap-1 lg:flex">
           {NAV.map((item) => {
             const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
             return (
@@ -38,10 +67,10 @@ export default function SiteHeader() {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  "border-b-2 px-3 py-1 text-[15px] font-medium transition-colors",
                   active
-                    ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    ? "border-primary text-primary"
+                    : "border-transparent text-foreground/75 hover:text-foreground",
                 )}
               >
                 {item.label}
@@ -50,11 +79,15 @@ export default function SiteHeader() {
           })}
         </nav>
 
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ml-auto hidden w-[320px] md:block xl:w-[420px]">
+          <SearchBar placeholder="Buscar produtos" showButton={false} />
+        </div>
+
+        <div className="ml-auto flex items-center gap-1 md:ml-2">
           <Link
             to="/produtos"
             aria-label="Pesquisar produtos"
-            className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+            className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "rounded-full md:hidden")}
           >
             <Search className="h-4 w-4" />
           </Link>
@@ -62,50 +95,12 @@ export default function SiteHeader() {
           <Button
             variant="ghost"
             size="icon"
+            className="rounded-full"
             onClick={() => setTheme(isDark ? "light" : "dark")}
             aria-label="Alternar tema"
           >
             {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
-
-          <Link
-            to="/painel"
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "hidden sm:inline-flex")}
-          >
-            <LayoutDashboard className="mr-1.5 h-3.5 w-3.5" />
-            Painel
-          </Link>
-
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Abrir menu">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[280px]">
-              <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
-              <div className="mt-2">
-                <Brand subtitle="Recomendações independentes" />
-              </div>
-              <nav aria-label="Navegação mobile" className="mt-6 flex flex-col gap-1">
-                {NAV.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-                <Link
-                  to="/painel"
-                  className="mt-2 rounded-lg border border-border px-3 py-2.5 text-sm font-medium hover:bg-muted"
-                >
-                  Painel administrativo
-                </Link>
-              </nav>
-            </SheetContent>
-          </Sheet>
         </div>
       </div>
     </header>

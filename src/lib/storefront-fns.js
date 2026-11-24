@@ -13,7 +13,7 @@ const PLATFORM_LABELS = {
 const publicSettings = (row) =>
   row
     ? {
-        site_name: row.site_name ?? "AffiliateFlow",
+        site_name: row.site_name ?? "Radar de Ofertas",
         tagline: row.tagline ?? null,
         default_title: row.default_title ?? null,
         default_description: row.default_description ?? null,

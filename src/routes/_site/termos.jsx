@@ -8,8 +8,7 @@ export const Route = createFileRoute("/_site/termos")({
   head: ({ loaderData }) =>
     buildHead({
       title: `Termos de uso | ${siteName(loaderData)}`,
-      description:
-        "Condições de uso do AffiliateFlow, site de recomendações com links de afiliados para marketplaces parceiros.",
+      description: "Condições de uso do site, das ofertas e das informações publicadas.",
       path: "/termos",
       settings: loaderData,
     }),
@@ -18,36 +17,36 @@ export const Route = createFileRoute("/_site/termos")({
 
 function TermsPage() {
   const settings = Route.useLoaderData();
+  const name = siteName(settings);
 
   return (
     <LegalLayout
       title="Termos de uso"
-      intro="Ao navegar neste site, você concorda com as condições abaixo. Elas descrevem o que o AffiliateFlow faz e o que não faz."
+      intro="Ao navegar neste site, você concorda com as condições abaixo."
     >
       <LegalSection title="Objeto do site">
         <p>
-          O AffiliateFlow publica recomendações, comparativos e ofertas de produtos de terceiros.
-          O conteúdo é informativo e não constitui promessa de resultado, economia garantida ou
+          {name} publica ofertas, comparações e informações sobre produtos de terceiros. O conteúdo
+          é informativo e não constitui promessa de resultado, economia garantida ou
           disponibilidade de estoque.
         </p>
       </LegalSection>
 
-      <LegalSection title="Relação comercial">
+      <LegalSection title="Ofertas e lojas parceiras">
         <p>
-          Os links de oferta são links de afiliados. Podemos receber comissão quando você compra por
-          meio deles, sem custo adicional para você. Essa relação não altera o preço exibido no
-          marketplace.
+          As ofertas direcionam você para a loja parceira, onde a compra é concluída. Preços,
+          condições e disponibilidade são definidos pela própria loja.
         </p>
       </LegalSection>
 
       <LegalSection title="Compra e pós-venda">
         <p>
-          A compra é concluída no site do marketplace parceiro. Pagamento, nota fiscal, entrega,
-          troca e garantia são responsabilidade do vendedor e da plataforma onde a compra foi feita.
+          A compra é concluída no site da loja parceira. Pagamento, nota fiscal, entrega, troca e
+          garantia são responsabilidade do vendedor e da plataforma onde a compra foi feita.
         </p>
         <p>
-          Preços, prazos e condições podem mudar a qualquer momento no marketplace. Sempre confirme
-          o valor final antes de finalizar a compra.
+          Preços, prazos e condições podem mudar a qualquer momento. Sempre confirme o valor final
+          antes de finalizar a compra.
         </p>
       </LegalSection>
 
@@ -63,7 +62,7 @@ function TermsPage() {
         <p>
           Fazemos o possível para manter preços e informações atualizados, mas não garantimos
           exatidão permanente. Não respondemos por indisponibilidade de produtos, variações de preço
-          ou práticas dos marketplaces parceiros.
+          ou práticas das lojas parceiras.
         </p>
       </LegalSection>
 

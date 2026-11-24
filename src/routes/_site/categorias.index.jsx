@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import CategoryCard from "@/components/site/CategoryCard";
-import Breadcrumbs from "@/components/site/Breadcrumbs";
 import { listStorefrontCategories } from "@/lib/storefront-fns";
 import { breadcrumbJsonLd, buildHead, siteName } from "@/lib/seo";
 
@@ -9,9 +8,8 @@ export const Route = createFileRoute("/_site/categorias/")({
   head: ({ loaderData }) => {
     const settings = loaderData?.settings;
     return buildHead({
-      title: `Categorias de produtos | ${siteName(settings)}`,
-      description:
-        "Explore as categorias da vitrine: tecnologia, casa, cozinha, beleza, esportes, informática e mais.",
+      title: `Categorias | ${siteName(settings)}`,
+      description: "Explore as categorias da loja e encontre o produto que você procura.",
       path: "/categorias",
       settings,
       jsonLd: breadcrumbJsonLd(settings, [
@@ -27,33 +25,24 @@ function CategoriesPage() {
   const { categories } = Route.useLoaderData();
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
-      <Breadcrumbs items={[{ label: "Início", to: "/" }, { label: "Categorias" }]} />
-
-      <header className="mt-4 max-w-2xl">
-        <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+    <div className="mx-auto w-full max-w-[120rem] px-4 py-8 sm:px-6 sm:py-10">
+      <header>
+        <h1 className="font-heading text-[1.75rem] font-extrabold tracking-[-0.02em] sm:text-[2.25rem]">
           Categorias
         </h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
-          Escolha uma categoria para ver os produtos recomendados e comparar as opções.
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          Escolha uma categoria para ver os produtos disponíveis.
         </p>
       </header>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {categories.map((category) => (
-          <div key={category.id} className="flex flex-col gap-1">
-            <CategoryCard category={category} />
-            <span className="px-1 text-[11px] text-muted-foreground">
-              {category.product_count === 1
-                ? "1 produto publicado"
-                : `${category.product_count} produtos publicados`}
-            </span>
-          </div>
+          <CategoryCard key={category.id} category={category} />
         ))}
       </div>
 
       {!categories.length ? (
-        <p className="mt-8 rounded-2xl border border-dashed border-border bg-card px-6 py-12 text-center text-sm text-muted-foreground">
+        <p className="mt-8 rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center text-sm text-muted-foreground">
           Nenhuma categoria publicada ainda.
         </p>
       ) : null}

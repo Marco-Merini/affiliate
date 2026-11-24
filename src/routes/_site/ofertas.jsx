@@ -1,7 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import Breadcrumbs from "@/components/site/Breadcrumbs";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import ProductGrid from "@/components/site/ProductGrid";
-import AffiliateNotice from "@/components/site/AffiliateNotice";
+import { formatNumber } from "@/lib/format";
 import { getStorefrontOffers } from "@/lib/storefront-fns";
 import { breadcrumbJsonLd, buildHead, siteName } from "@/lib/seo";
 
@@ -10,9 +9,8 @@ export const Route = createFileRoute("/_site/ofertas")({
   head: ({ loaderData }) => {
     const settings = loaderData?.settings;
     return buildHead({
-      title: `Ofertas selecionadas | ${siteName(settings)}`,
-      description:
-        "Ofertas com desconto conferido sobre o preço anterior registrado. Compare antes de comprar no marketplace parceiro.",
+      title: `Ofertas | ${siteName(settings)}`,
+      description: "Produtos com desconto sobre o preço anterior registrado.",
       path: "/ofertas",
       settings,
       jsonLd: breadcrumbJsonLd(settings, [
@@ -25,19 +23,21 @@ export const Route = createFileRoute("/_site/ofertas")({
 });
 
 function OffersPage() {
-  const { offers, settings } = Route.useLoaderData();
+  const { offers } = Route.useLoaderData();
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
-      <Breadcrumbs items={[{ label: "Início", to: "/" }, { label: "Ofertas" }]} />
-
-      <header className="mt-4 max-w-2xl">
-        <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-          Ofertas selecionadas
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
-          Descontos calculados sobre o preço anterior registrado por nós. O valor final é sempre o
-          do marketplace parceiro.
+    <div className="mx-auto w-full max-w-[120rem] px-4 py-8 sm:px-6 sm:py-10">
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-heading text-[1.75rem] font-extrabold tracking-[-0.02em] sm:text-[2.25rem]">
+            Ofertas
+          </h1>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Produtos com desconto sobre o preço anterior registrado.
+          </p>
+        </div>
+        <p className="text-[13px] text-muted-foreground">
+          {formatNumber(offers.length)} oferta{offers.length === 1 ? "" : "s"}
         </p>
       </header>
 
@@ -45,17 +45,16 @@ function OffersPage() {
         {offers.length ? (
           <ProductGrid products={offers} />
         ) : (
-          <div className="rounded-2xl border border-dashed border-border bg-card px-6 py-16 text-center">
-            <p className="font-heading text-base font-semibold">Nenhuma oferta ativa agora</p>
+          <div className="rounded-xl border border-dashed border-border bg-card px-6 py-14 text-center">
+            <p className="font-heading text-lg font-semibold">Nenhuma oferta no momento</p>
             <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
-              Só publicamos desconto quando existe preço anterior registrado. Volte em breve.
+              Volte em breve para ver novas ofertas.
             </p>
+            <Link to="/produtos" className="mt-3 inline-block text-sm font-semibold text-primary hover:underline">
+              Ver todos os produtos
+            </Link>
           </div>
         )}
-      </div>
-
-      <div className="mt-10 max-w-2xl">
-        <AffiliateNotice text={settings?.affiliate_disclosure} />
       </div>
     </div>
   );

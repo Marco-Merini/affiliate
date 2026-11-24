@@ -47,6 +47,11 @@ export default {
   				DEFAULT: 'hsl(var(--brand))',
   				foreground: 'hsl(var(--brand-foreground))'
   			},
+  			footer: {
+  				DEFAULT: 'hsl(var(--footer))',
+  				foreground: 'hsl(var(--footer-foreground))',
+  				border: 'hsl(var(--footer-border))'
+  			},
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',

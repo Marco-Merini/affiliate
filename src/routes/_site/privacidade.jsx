@@ -8,8 +8,7 @@ export const Route = createFileRoute("/_site/privacidade")({
   head: ({ loaderData }) =>
     buildHead({
       title: `Política de privacidade | ${siteName(loaderData)}`,
-      description:
-        "Como o AffiliateFlow trata dados de navegação, cliques em links de afiliados e preferências do visitante.",
+      description: "Como tratamos dados de navegação e preferências do visitante.",
       path: "/privacidade",
       settings: loaderData,
     }),
@@ -18,17 +17,18 @@ export const Route = createFileRoute("/_site/privacidade")({
 
 function PrivacyPage() {
   const settings = Route.useLoaderData();
+  const name = siteName(settings);
 
   return (
     <LegalLayout
       title="Política de privacidade"
-      intro="Esta política explica quais informações o site trata ao navegar pelas nossas recomendações e como você pode exercer seus direitos."
+      intro="Esta política explica quais informações o site trata ao navegar pelas nossas ofertas e como você pode exercer seus direitos."
     >
       <LegalSection title="Quem somos">
         <p>
-          O AffiliateFlow é um site de recomendações de produtos. Não vendemos produtos, não
-          processamos pagamentos e não realizamos entregas: indicamos onde comprar em marketplaces
-          parceiros por meio de links de afiliados.
+          {name} é um site de ofertas e recomendações de produtos. Não vendemos produtos, não
+          processamos pagamentos e não realizamos entregas: indicamos onde comprar nas lojas
+          parceiras.
         </p>
       </LegalSection>
 
@@ -37,9 +37,9 @@ function PrivacyPage() {
           Não exigimos cadastro para navegar. Não coletamos nome, CPF, endereço ou dados de cartão.
         </p>
         <p>
-          Registramos de forma agregada os acessos às páginas e os cliques nos links de afiliados,
-          incluindo a página de origem e o canal de entrada. Esses registros não identificam você
-          pessoalmente e servem para entender quais recomendações são úteis.
+          Registramos de forma agregada os acessos às páginas e os cliques nas ofertas, incluindo a
+          página de origem e o canal de entrada. Esses registros não identificam você pessoalmente e
+          servem para entender quais ofertas são úteis.
         </p>
         <p>
           A sua preferência de tema (claro ou escuro) é guardada no armazenamento local do seu
@@ -47,19 +47,16 @@ function PrivacyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="Links de afiliados">
+      <LegalSection title="Lojas parceiras">
         <p>
-          Quando você clica em uma oferta, é direcionado ao site do marketplace parceiro. A partir
-          desse momento, aplicam-se as políticas de privacidade e cookies daquele site, que não
+          Quando você clica em uma oferta, é direcionado ao site da loja parceira. A partir desse
+          momento, aplicam-se as políticas de privacidade e cookies daquele site, que não
           controlamos.
         </p>
       </LegalSection>
 
       <LegalSection title="Compartilhamento">
-        <p>
-          Não vendemos nem alugamos dados de visitantes. O marketplace parceiro recebe apenas o
-          acesso ao link de afiliado, como qualquer visita ao site dele.
-        </p>
+        <p>Não vendemos nem alugamos dados de visitantes.</p>
       </LegalSection>
 
       <LegalSection title="Seus direitos">

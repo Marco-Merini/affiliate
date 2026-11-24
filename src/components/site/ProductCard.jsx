@@ -1,66 +1,79 @@
 import { Link } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 import { Image } from "@/components/ui/image";
+import { buttonVariants } from "@/components/ui/button";
 import { formatCurrency, formatNumber } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 export default function ProductCard({ product }) {
   const price = Number(product.current_price) > 0 ? formatCurrency(product.current_price) : null;
   const previous =
     Number(product.previous_price) > 0 ? formatCurrency(product.previous_price) : null;
   const rating = Number(product.rating) > 0 ? Number(product.rating) : null;
+  const params = { slug: product.slug };
 
   return (
-    <Link
-      to="/produtos/$slug"
-      params={{ slug: product.slug }}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-lg"
-    >
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(27,29,34,0.08)]">
+      <Link to="/produtos/$slug" params={params} className="relative block aspect-square bg-card p-4">
         <Image
           src={product.image_url}
           alt={product.name}
           loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          fittingType="fit"
+          className="h-full w-full object-contain"
         />
         {product.discount ? (
-          <span className="absolute left-3 top-3 rounded-full bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white">
+          <span className="absolute left-3 top-3 rounded-md bg-destructive/10 px-2 py-0.5 text-[12px] font-bold text-destructive">
             -{product.discount}%
           </span>
         ) : null}
-      </div>
+      </Link>
 
-      <div className="flex flex-1 flex-col gap-2 p-4">
+      <div className="flex flex-1 flex-col gap-1.5 px-4 pb-4">
         {product.category ? (
-          <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <span className="w-fit rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-accent-foreground">
             {product.category.name}
           </span>
         ) : null}
 
-        <h3 className="line-clamp-2 font-heading text-sm font-semibold leading-snug">
-          {product.name}
-        </h3>
+        <Link to="/produtos/$slug" params={params}>
+          <h3 className="line-clamp-2 text-[15px] font-medium leading-snug text-foreground">
+            {product.name}
+          </h3>
+        </Link>
 
         {rating ? (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
-            <span className="font-medium text-foreground">{rating.toFixed(1)}</span>
+          <div className="flex items-center gap-1 text-[13px]">
+            <Star className="h-3.5 w-3.5 fill-[#F5A524] text-[#F5A524]" aria-hidden="true" />
+            <span className="font-semibold">{rating.toFixed(1)}</span>
             {Number(product.review_count) > 0 ? (
-              <span>({formatNumber(product.review_count)})</span>
+              <span className="text-muted-foreground">({formatNumber(product.review_count)})</span>
             ) : null}
           </div>
         ) : null}
 
-        <div className="mt-auto flex flex-wrap items-baseline gap-2 pt-1">
-          {price ? (
-            <span className="font-heading text-lg font-bold">{price}</span>
-          ) : (
-            <span className="text-xs text-muted-foreground">Preço no marketplace</span>
-          )}
+        <div className="mt-auto pt-2">
           {previous ? (
-            <span className="text-xs text-muted-foreground line-through">{previous}</span>
+            <span className="block text-[13px] text-muted-foreground line-through">{previous}</span>
           ) : null}
+          <span
+            className={cn(
+              "block font-heading text-[22px] font-extrabold tracking-[-0.02em]",
+              product.discount ? "text-destructive" : "text-foreground",
+            )}
+          >
+            {price ?? "Ver preço"}
+          </span>
         </div>
+
+        <Link
+          to="/produtos/$slug"
+          params={params}
+          className={cn(buttonVariants(), "mt-2 h-11 w-full rounded-full text-[13px]")}
+        >
+          Ver oferta
+        </Link>
       </div>
-    </Link>
+    </article>
   );
 }

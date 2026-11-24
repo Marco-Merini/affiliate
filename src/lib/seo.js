@@ -1,8 +1,5 @@
 export const DEFAULT_BASE_URL = "https://large-smart-affiliate-flow.base44.app";
 
-export const DEFAULT_DISCLOSURE =
-  "Esta página contém links de afiliados. Podemos receber uma comissão caso você realize uma compra por meio desses links, sem custo adicional para você.";
-
 export const slugify = (value) =>
   String(value ?? "")
     .normalize("NFD")
@@ -18,7 +15,7 @@ export const siteBaseUrl = (settings) =>
 export const absoluteUrl = (settings, path = "/") =>
   `${siteBaseUrl(settings)}${path.startsWith("/") ? path : `/${path}`}`;
 
-export const siteName = (settings) => settings?.site_name || "AffiliateFlow";
+export const siteName = (settings) => settings?.site_name || "Radar de Ofertas";
 
 export const discountPercent = (current, previous) => {
   const price = Number(current);

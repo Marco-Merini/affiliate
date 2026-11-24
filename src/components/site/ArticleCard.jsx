@@ -7,9 +7,9 @@ export default function ArticleCard({ article }) {
     <Link
       to="/blog/$slug"
       params={{ slug: article.slug }}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-lg"
+      className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(27,29,34,0.08)]"
     >
-      <div className="aspect-[16/9] overflow-hidden bg-muted">
+      <div className="aspect-[16/9] overflow-hidden bg-accent">
         <Image
           src={article.cover_image_url}
           alt={article.title}
@@ -19,15 +19,15 @@ export default function ArticleCard({ article }) {
       </div>
       <div className="flex flex-1 flex-col gap-2 p-5">
         {article.category ? (
-          <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <span className="w-fit rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-accent-foreground">
             {article.category.name}
           </span>
         ) : null}
-        <h3 className="line-clamp-2 font-heading text-base font-semibold leading-snug">
+        <h3 className="line-clamp-2 font-heading text-[17px] font-bold leading-snug tracking-[-0.01em]">
           {article.title}
         </h3>
         {article.excerpt ? (
-          <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+          <p className="line-clamp-2 text-[13.5px] leading-relaxed text-muted-foreground">
             {article.excerpt}
           </p>
         ) : null}

@@ -81,6 +81,61 @@
     --sidebar-border: 218 24% 18%;
     --sidebar-ring: 149 62% 48%;
   }
+
+  /* Vitrine pública: sistema visual próprio da loja */
+  .store-theme {
+    --background: 45 18% 96%;
+    --foreground: 223 11% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 223 11% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 223 11% 12%;
+    --primary: 224 75% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 45 15% 94%;
+    --secondary-foreground: 223 11% 12%;
+    --muted: 45 15% 94%;
+    --muted-foreground: 221 7% 45%;
+    --accent: 226 62% 96%;
+    --accent-foreground: 224 75% 40%;
+    --destructive: 358 75% 59%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 45 13% 88%;
+    --input: 45 13% 88%;
+    --ring: 224 75% 48%;
+    --brand: 224 75% 48%;
+    --brand-foreground: 0 0% 100%;
+    --footer: 223 11% 12%;
+    --footer-foreground: 220 8% 81%;
+    --footer-border: 222 12% 19%;
+  }
+
+  .dark .store-theme {
+    --background: 225 18% 9%;
+    --foreground: 220 8% 93%;
+    --card: 224 17% 13%;
+    --card-foreground: 220 8% 93%;
+    --popover: 224 17% 13%;
+    --popover-foreground: 220 8% 93%;
+    --primary: 227 100% 71%;
+    --primary-foreground: 225 18% 9%;
+    --secondary: 222 14% 19%;
+    --secondary-foreground: 220 8% 93%;
+    --muted: 222 14% 19%;
+    --muted-foreground: 220 10% 64%;
+    --accent: 222 16% 22%;
+    --accent-foreground: 227 100% 85%;
+    --destructive: 358 100% 71%;
+    --destructive-foreground: 225 18% 9%;
+    --border: 222 14% 19%;
+    --input: 222 14% 19%;
+    --ring: 227 100% 71%;
+    --brand: 227 100% 71%;
+    --brand-foreground: 225 18% 9%;
+    --footer: 225 20% 6%;
+    --footer-foreground: 220 8% 81%;
+    --footer-border: 222 12% 16%;
+  }
 }
 
 @layer base {

@@ -1,25 +1,33 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight } from "lucide-react";
+import { Tag } from "lucide-react";
 
 export default function CategoryCard({ category }) {
   return (
     <Link
       to="/categorias/$slug"
       params={{ slug: category.slug }}
-      className="group flex flex-col gap-1 rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/30 hover:bg-muted/50"
+      className="group flex h-full items-start gap-3 rounded-xl border border-border bg-card p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(27,29,34,0.08)]"
     >
-      <span className="flex items-center justify-between gap-2">
-        <span className="font-heading text-sm font-semibold">{category.name}</span>
-        <ArrowUpRight
-          className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary"
-          aria-hidden="true"
-        />
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent text-primary">
+        <Tag className="h-5 w-5" aria-hidden="true" />
       </span>
-      {category.description ? (
-        <span className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-          {category.description}
+      <span className="min-w-0">
+        <span className="block font-heading text-base font-bold tracking-[-0.01em]">
+          {category.name}
         </span>
-      ) : null}
+        {category.description ? (
+          <span className="mt-0.5 line-clamp-2 block text-[13px] leading-relaxed text-muted-foreground">
+            {category.description}
+          </span>
+        ) : null}
+        {typeof category.product_count === "number" ? (
+          <span className="mt-1 block text-[12px] text-muted-foreground">
+            {category.product_count === 1
+              ? "1 produto"
+              : `${category.product_count} produtos`}
+          </span>
+        ) : null}
+      </span>
     </Link>
   );
 }

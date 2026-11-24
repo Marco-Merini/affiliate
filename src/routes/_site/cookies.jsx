@@ -8,8 +8,7 @@ export const Route = createFileRoute("/_site/cookies")({
   head: ({ loaderData }) =>
     buildHead({
       title: `Política de cookies | ${siteName(loaderData)}`,
-      description:
-        "Quais cookies e armazenamento local o AffiliateFlow utiliza e como gerenciar suas preferências.",
+      description: "Quais cookies e armazenamento local o site utiliza e como gerenciar suas preferências.",
       path: "/cookies",
       settings: loaderData,
     }),
@@ -37,8 +36,8 @@ function CookiesPage() {
           escuro, para manter a escolha na próxima visita.
         </p>
         <p>
-          Medição interna: registramos acessos a páginas e cliques em links de afiliados de forma
-          agregada, sem identificar você pessoalmente.
+          Medição interna: registramos acessos a páginas e cliques nas ofertas de forma agregada,
+          sem identificar você pessoalmente.
         </p>
         <p>
           Não usamos cookies de redes de anúncios nem criamos perfis de navegação para publicidade.
@@ -47,9 +46,8 @@ function CookiesPage() {
 
       <LegalSection title="Cookies de terceiros">
         <p>
-          Ao clicar em uma oferta, você visita o site do marketplace parceiro. Aquele site pode
-          definir cookies próprios, conforme as políticas dele. Não temos controle sobre esses
-          cookies.
+          Ao clicar em uma oferta, você visita o site da loja parceira. Aquele site pode definir
+          cookies próprios, conforme as políticas dele. Não temos controle sobre esses cookies.
         </p>
       </LegalSection>
 
