@@ -8,7 +8,9 @@ import {
   Package,
   PenLine,
   Plug,
+  Search,
   Settings,
+  Store,
   Tags,
   Target,
 } from "lucide-react";
@@ -17,8 +19,15 @@ export const NAV_GROUPS = [
   {
     label: "Visão geral",
     items: [
-      { label: "Dashboard", to: "/", icon: LayoutDashboard },
+      { label: "Dashboard", to: "/painel", icon: LayoutDashboard },
       { label: "Oportunidades", to: "/oportunidades", icon: Target },
+    ],
+  },
+  {
+    label: "Vitrine",
+    items: [
+      { label: "SEO e Google", to: "/seo", icon: Search },
+      { label: "Vitrine pública", to: "/", icon: Store },
     ],
   },
   {
@@ -49,7 +58,7 @@ export const NAV_GROUPS = [
 ];
 
 export const getPageTitle = (pathname) => {
-  if (pathname === "/") return "Dashboard";
+  if (pathname === "/painel") return "Dashboard";
   const match = NAV_GROUPS.flatMap((group) => group.items).find(
     (item) => item.to && item.to !== "/" && pathname.startsWith(item.to),
   );

@@ -1,0 +1,80 @@
+{
+  "type": "object",
+  "name": "SeoSettings",
+  "description": "Configura\u00e7\u00e3o de identidade e SEO da vitrine p\u00fablica. Registro \u00fanico gerenciado pelo administrador.",
+  "properties": {
+    "site_name": {
+      "type": "string",
+      "description": "Nome exibido do site"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Frase curta de posicionamento"
+    },
+    "default_title": {
+      "type": "string",
+      "description": "T\u00edtulo padr\u00e3o das p\u00e1ginas"
+    },
+    "default_description": {
+      "type": "string",
+      "description": "Meta description padr\u00e3o"
+    },
+    "base_url": {
+      "type": "string",
+      "description": "URL p\u00fablica usada em canonical, sitemap e Open Graph"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "URL do logotipo"
+    },
+    "affiliate_disclosure": {
+      "type": "string",
+      "description": "Aviso de transpar\u00eancia sobre links de afiliados"
+    },
+    "allow_indexing": {
+      "type": "boolean",
+      "description": "Permite que mecanismos de busca indexem o site"
+    },
+    "robots_extra": {
+      "type": "string",
+      "description": "Regras adicionais inclu\u00eddas no robots.txt"
+    },
+    "search_console_verification": {
+      "type": "string",
+      "description": "C\u00f3digo de verifica\u00e7\u00e3o do Google Search Console"
+    },
+    "search_console_property": {
+      "type": "string",
+      "description": "Propriedade registrada no Search Console"
+    },
+    "contact_email": {
+      "type": "string",
+      "description": "E-mail de contato exibido nas p\u00e1ginas legais"
+    }
+  },
+  "required": [
+    "site_name"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

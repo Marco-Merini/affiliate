@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth-middleware";
 import { computeOpportunityScore } from "@/lib/opportunity";
+import { slugify } from "@/lib/seo";
 
 const DAY_MS = 86400000;
 
@@ -173,7 +174,7 @@ export const createProduct = createServerFn({ method: "POST" })
   .validator(z.object(productFields))
   .handler(async ({ data, context }) => {
     const db = context.getBase44();
-    const created = await db.entities.Product.create(data);
+    const created = await db.entities.Product.create({ ...data, slug: slugify(data.name) });
     await logActivity(
       db,
       "product.created",
@@ -190,6 +191,7 @@ export const updateProduct = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const db = context.getBase44();
     const { id, ...patch } = data;
+    if (patch.name) patch.slug = slugify(patch.name);
     const updated = await db.entities.Product.update(id, patch);
     await logActivity(
       db,
@@ -329,7 +331,7 @@ export const createCategory = createServerFn({ method: "POST" })
   .validator(z.object(categoryFields))
   .handler(async ({ data, context }) => {
     const db = context.getBase44();
-    const created = await db.entities.Category.create(data);
+    const created = await db.entities.Category.create({ ...data, slug: slugify(data.name) });
     await logActivity(
       db,
       "category.created",
@@ -346,6 +348,7 @@ export const updateCategory = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const db = context.getBase44();
     const { id, ...patch } = data;
+    if (patch.name) patch.slug = slugify(patch.name);
     const updated = await db.entities.Category.update(id, patch);
     await logActivity(
       db,

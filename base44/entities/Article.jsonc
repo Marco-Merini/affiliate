@@ -1,0 +1,127 @@
+{
+  "type": "object",
+  "name": "Article",
+  "description": "Guia, comparativo ou recomenda\u00e7\u00e3o publicada na vitrine. Somente artigos com status publicado aparecem no site.",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "T\u00edtulo do artigo"
+    },
+    "slug": {
+      "type": "string",
+      "description": "Identificador amig\u00e1vel usado na URL p\u00fablica"
+    },
+    "excerpt": {
+      "type": "string",
+      "description": "Resumo exibido nos cards e usado como meta description quando n\u00e3o houver uma espec\u00edfica"
+    },
+    "content": {
+      "type": "string",
+      "description": "Conte\u00fado do artigo em texto"
+    },
+    "cover_image_url": {
+      "type": "string",
+      "description": "Imagem de capa do artigo"
+    },
+    "category_id": {
+      "type": "string",
+      "description": "Categoria relacionada"
+    },
+    "product_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Produtos citados no artigo"
+    },
+    "primary_keyword": {
+      "type": "string",
+      "description": "Palavra-chave principal"
+    },
+    "secondary_keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Palavras-chave secund\u00e1rias"
+    },
+    "meta_title": {
+      "type": "string",
+      "description": "T\u00edtulo para mecanismos de busca"
+    },
+    "meta_description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o para mecanismos de busca"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Autor exibido no artigo"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published"
+      ],
+      "enumColors": [
+        "gray",
+        "green"
+      ],
+      "description": "Situa\u00e7\u00e3o da publica\u00e7\u00e3o"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Momento da publica\u00e7\u00e3o"
+    }
+  },
+  "required": [
+    "title",
+    "slug",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.status": "published"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

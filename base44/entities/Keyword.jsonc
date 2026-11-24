@@ -1,0 +1,93 @@
+{
+  "type": "object",
+  "name": "Keyword",
+  "description": "Palavras-chave planejadas para conte\u00fado e p\u00e1ginas da vitrine. Nenhum volume de busca \u00e9 estimado pelo sistema.",
+  "properties": {
+    "keyword": {
+      "type": "string",
+      "description": "Palavra-chave ou express\u00e3o de busca"
+    },
+    "intent": {
+      "type": "string",
+      "enum": [
+        "informational",
+        "commercial",
+        "transactional",
+        "navigational"
+      ],
+      "enumColors": [
+        "blue",
+        "purple",
+        "green",
+        "gray"
+      ],
+      "description": "Inten\u00e7\u00e3o de pesquisa"
+    },
+    "category_id": {
+      "type": "string",
+      "description": "Categoria relacionada"
+    },
+    "target_url": {
+      "type": "string",
+      "description": "P\u00e1gina de destino planejada"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "enumColors": [
+        "red",
+        "yellow",
+        "gray"
+      ],
+      "description": "Prioridade de trabalho"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "published"
+      ],
+      "enumColors": [
+        "gray",
+        "yellow",
+        "green"
+      ],
+      "description": "Situa\u00e7\u00e3o do trabalho"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es e fonte de dados, quando houver"
+    }
+  },
+  "required": [
+    "keyword",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

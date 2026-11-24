@@ -6,7 +6,7 @@ import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import DashboardError from "@/components/dashboard/DashboardError";
 import { getDashboardOverview } from "@/lib/server-fns";
 
-export const Route = createFileRoute("/_authed/")({
+export const Route = createFileRoute("/_authed/painel")({
   head: () => ({ meta: [{ title: "Dashboard · AffiliateFlow" }] }),
   component: DashboardPage,
 });
