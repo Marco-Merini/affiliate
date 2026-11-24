@@ -1,0 +1,45 @@
+{
+  "name": "Atualizar vitrine do Mercado Livre",
+  "description": "L\u00ea a lista de afiliados do Mercado Livre e atualiza pre\u00e7os, avalia\u00e7\u00f5es e novos produtos da vitrine a cada 3 horas.",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "atualizar_vitrine_mercado_livre",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "sincronizar_ofertas": {
+          "call": "invoke_server_route",
+          "with": {
+            "path": "/api/sync/ofertas",
+            "method": "POST"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Sincronizar ofertas",
+            "description": "Pre\u00e7os, avalia\u00e7\u00f5es e produtos novos da lista"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 */3 * * *",
+      "one_time_date": null,
+      "timezone": "America/Sao_Paulo",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}
