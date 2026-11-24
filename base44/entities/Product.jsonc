@@ -11,6 +11,10 @@
       "type": "string",
       "description": "Identificador amig\u00e1vel usado na URL p\u00fablica"
     },
+    "external_id": {
+      "type": "string",
+      "description": "Identificador do item na plataforma de origem, usado para evitar importa\u00e7\u00f5es duplicadas"
+    },
     "description": {
       "type": "string",
       "description": "Descri\u00e7\u00e3o do produto"

@@ -2,6 +2,7 @@ import {
   BarChart3,
   CalendarDays,
   CheckCircle2,
+  Download,
   LayoutDashboard,
   Megaphone,
   Network,
@@ -34,6 +35,7 @@ export const NAV_GROUPS = [
     label: "Catálogo",
     items: [
       { label: "Produtos", to: "/produtos", icon: Package },
+      { label: "Importar do Mercado Livre", to: "/importar", icon: Download },
       { label: "Programas", to: "/programas", icon: Network },
       { label: "Categorias", to: "/categorias", icon: Tags },
     ],

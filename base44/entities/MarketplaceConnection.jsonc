@@ -1,0 +1,79 @@
+{
+  "type": "object",
+  "name": "MarketplaceConnection",
+  "description": "Conex\u00e3o autorizada com um marketplace via OAuth oficial. Guarda os tokens usados apenas pelo servidor para consultar a API.",
+  "properties": {
+    "platform": {
+      "type": "string",
+      "description": "Marketplace conectado, ex.: mercado_livre"
+    },
+    "access_token": {
+      "type": "string",
+      "description": "Token de acesso devolvido pelo marketplace"
+    },
+    "refresh_token": {
+      "type": "string",
+      "description": "Token usado para renovar o acesso"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Expira\u00e7\u00e3o do token de acesso"
+    },
+    "external_user_id": {
+      "type": "string",
+      "description": "Identificador da conta no marketplace"
+    },
+    "nickname": {
+      "type": "string",
+      "description": "Nome da conta conectada"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "connected",
+        "expired",
+        "error",
+        "disconnected"
+      ],
+      "enumColors": [
+        "green",
+        "yellow",
+        "red",
+        "gray"
+      ],
+      "description": "Situa\u00e7\u00e3o da conex\u00e3o"
+    },
+    "connected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data da autoriza\u00e7\u00e3o"
+    }
+  },
+  "required": [
+    "platform",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
