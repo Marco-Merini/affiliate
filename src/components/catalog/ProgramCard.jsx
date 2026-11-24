@@ -8,6 +8,7 @@ import {
   hasValue,
   programPlatformLabel,
 } from "@/lib/catalog";
+import { safeHttpUrl } from "@/lib/seo";
 
 export default function ProgramCard({ program, productCount, onEdit, onToggleActive, onDelete }) {
   return (
@@ -28,9 +29,9 @@ export default function ProgramCard({ program, productCount, onEdit, onToggleAct
 
       <p className="mt-2 truncate text-[14px] font-semibold leading-tight">{program.name}</p>
 
-      {hasValue(program.website_url) ? (
+      {safeHttpUrl(program.website_url) ? (
         <a
-          href={program.website_url}
+          href={safeHttpUrl(program.website_url)}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-1 inline-flex items-center gap-1 truncate text-[11.5px] text-muted-foreground hover:text-primary"

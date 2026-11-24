@@ -231,7 +231,14 @@ export const deleteProduct = createServerFn({ method: "POST" })
 const programFields = {
   name: z.string().min(1).max(160),
   platform: z.enum(["mercado_livre", "amazon", "shopee", "hotmart", "outro"]),
-  website_url: z.string().max(1200).nullable().optional(),
+  website_url: z
+    .string()
+    .max(1200)
+    .refine((value) => !value || safeHttpUrl(value) !== null, {
+      message: "O site do programa deve ser uma URL http:// ou https:// válida.",
+    })
+    .nullable()
+    .optional(),
   default_commission: z.number().min(0).max(100).nullable().optional(),
   notes: z.string().max(4000).nullable().optional(),
   is_active: z.boolean(),
@@ -775,6 +782,18 @@ export const deletePost = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// A private upload lives under mp/private/<app>/app-users/<userId>/<file>:
+// only the caller's own uploads may be attached and later signed for download.
+const isOwnPrivateFile = (fileUri, userId) => {
+  const value = String(fileUri ?? "");
+  return (
+    value.startsWith("mp/private/") &&
+    value.includes(`/app-users/${userId}/`) &&
+    !value.includes("..") &&
+    /^[A-Za-z0-9._\-/]+$/.test(value)
+  );
+};
+
 export const addPostAsset = createServerFn({ method: "POST" })
   .middleware([requireUser])
   .validator(
@@ -786,6 +805,14 @@ export const addPostAsset = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const db = context.getBase44();
+    const post = await db.entities.Post.get(data.post_id).catch((error) => {
+      if (error?.status === 404) return null;
+      throw error;
+    });
+    if (!post) throw new Error("Publicação não encontrada.");
+    if (!isOwnPrivateFile(data.file_uri, context.user.id)) {
+      throw new Error("Arquivo inválido. Envie a imagem novamente.");
+    }
     const position = await db.entities.PostAsset.count({ post_id: data.post_id });
     return db.entities.PostAsset.create({
       post_id: data.post_id,

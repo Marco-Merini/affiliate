@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireAdmin, requireUser } from "@/lib/auth-middleware";
+import { requireAdmin } from "@/lib/auth-middleware";
 import { DEFAULT_BASE_URL, slugify } from "@/lib/seo";
 
 const MISSING_CREDENTIALS =
@@ -27,7 +27,7 @@ const mapResult = (item) => ({
 });
 
 export const getMercadoLivreStatus = createServerFn({ method: "GET" })
-  .middleware([requireUser])
+  .middleware([requireAdmin])
   .validator(z.object({}))
   .handler(async ({ context }) => {
     const { mlCredentials, readConnection } = await loadMl();
